@@ -7,20 +7,34 @@ Un outil Python simple et efficace pour scraper et télécharger les annales du 
 
 ## 🎯 Fonctionnalités
 
-- ✅ **Scraping simplifié** des liens de téléchargement `/document/*/download`
-- ✅ **Extraction de métadonnées** depuis les attributs `data-atl-name`
+- ✅ **Scraping avec Selenium** - Navigation automatique dans les pages avec JavaScript
+- ✅ **Pagination automatique** - Parcourt toutes les pages
+- ✅ **Extraction de liens** `/document/*/download` avec métadonnées
 - ✅ **Téléchargement concurrent** avec gestion de threads
 - ✅ **Organisation automatique** par année et matière
 - ✅ **Gestion d'erreurs robuste** avec retry automatique
 - ✅ **Rate limiting** pour respecter le serveur
 - ✅ **Logging complet** avec rotation de fichiers
 - ✅ **Interface CLI** intuitive
+- ✅ **Mode headless** ou visible pour le debugging
 
 ## 📋 Prérequis
 
 - Python 3.8 ou supérieur
 - pip (gestionnaire de paquets Python)
+- **Google Chrome** (navigateur)
+- **ChromeDriver** (compatible avec votre version de Chrome)
 - Connexion Internet
+
+### Installation de ChromeDriver
+
+**Méthode 1 - Automatique (recommandé):**
+ChromeDriver sera géré automatiquement par Selenium 4.15+
+
+**Méthode 2 - Manuelle:**
+1. Vérifiez votre version de Chrome : `chrome://version`
+2. Téléchargez ChromeDriver correspondant : https://chromedriver.chromium.org/downloads
+3. Ajoutez ChromeDriver au PATH système ou placez-le dans le dossier du projet
 
 ## 🚀 Installation
 
@@ -50,6 +64,8 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
+
+**Note**: Selenium sera installé automatiquement. Assurez-vous que Chrome est installé sur votre système.
 
 ## 📖 Utilisation
 
@@ -101,12 +117,15 @@ from src.scraper import DNBScraper
 from src.downloader import PDFDownloader
 from src.parser import MetadataParser
 
-# Initialisation du scraper
+# Initialisation du scraper (headless par défaut)
 scraper = DNBScraper()
 
-# Extraction des liens PDF
+# Ou en mode visible pour debugging
+# scraper = DNBScraper(headless=False)
+
+# Extraction des liens PDF (toutes les pages automatiquement)
 pdf_links = scraper.extract_pdf_links()
-print(f"Trouvé {len(pdf_links)} PDFs")
+print(f"Trouvé {len(pdf_links)} PDFs sur toutes les pages")
 
 # Obtenir le résumé
 summary = scraper.get_summary_dict()
@@ -169,7 +188,14 @@ sokratika-ExamScrapper/
 
 ## 📊 Structure HTML du site
 
-Le scraper est optimisé pour la structure HTML suivante :
+Le scraper utilise **Selenium WebDriver** pour gérer la pagination JavaScript et extraire les liens de toutes les pages.
+
+### Pagination :
+- **Boutons de navigation** : Premier, Précédent, [1][2][3]..., Suivant, Dernier
+- **Navigation automatique** : Parcourt toutes les pages jusqu'à la dernière avec le bouton "Suivant"
+- **JavaScript click** : Utilise JavaScript pour éviter les interceptions d'éléments
+
+### Structure du tableau :
 
 ```html
 <table>
@@ -193,6 +219,7 @@ Le scraper est optimisé pour la structure HTML suivante :
 - **Liens** : Format `/document/[ID]/download` (pas `.pdf`)
 - **Métadonnées** : Attribut `data-atl-name` contenant `"filename.pdf|file_id"`
 - **Colonnes** : Session, Discipline, Série, Localisation, Liens
+- **Pagination** : Gérée dynamiquement avec JavaScript
 
 ## 📊 Métadonnées extraites
 
@@ -230,6 +257,11 @@ Le parser extrait automatiquement les informations depuis `data-atl-name` et les
 Créez un fichier `.env` à la racine du projet :
 
 ```env
+# Selenium settings
+SELENIUM_HEADLESS=True         # Mode headless (True) ou visible (False)
+SELENIUM_TIMEOUT=20            # Timeout pour les éléments (secondes)
+SELENIUM_PAGE_LOAD_WAIT=2.0    # Attente entre les pages (secondes)
+
 # Rate limiting
 REQUEST_DELAY=1.5              # Délai entre les requêtes (secondes)
 DOWNLOAD_TIMEOUT=30            # Timeout de téléchargement (secondes)
@@ -301,10 +333,17 @@ data/raw/
 
 ```python
 class DNBScraper:
-    def __init__(self, base_url: str = BASE_URL)
+    def __init__(self, base_url: str = BASE_URL, headless: bool = True)
     def extract_pdf_links(self, url: Optional[str] = None) -> List[Dict[str, str]]
     def get_summary_dict(self) -> Dict
+    def close(self) -> None  # Ferme le WebDriver
 ```
+
+**Nouvelles fonctionnalités :**
+- Mode headless (navigateur invisible) par défaut
+- Pagination automatique (parcourt toutes les pages avec JavaScript click)
+- Fermeture automatique des overlays/modals
+- Waits explicites pour une meilleure stabilité
 
 ### MetadataParser
 
@@ -325,6 +364,37 @@ class PDFDownloader:
 ```
 
 ## 🐛 Dépannage
+
+### ChromeDriver not found
+
+```bash
+# Vérifier que Chrome est installé
+# Windows: Vérifier dans "Programmes et fonctionnalités"
+# Linux: google-chrome --version
+# Mac: /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --version
+
+# Selenium 4.15+ gère ChromeDriver automatiquement
+# Si problème persiste, installez webdriver-manager:
+pip install webdriver-manager
+```
+
+### Erreur "WebDriver initialization failed"
+
+```bash
+# Vérifier la version de Chrome et Selenium
+pip install --upgrade selenium
+
+# Ou utiliser le mode visible pour déboguer
+# Dans votre code: scraper = DNBScraper(headless=False)
+```
+
+### Timeout lors de la pagination
+
+```bash
+# Augmenter les timeouts dans .env
+echo "SELENIUM_TIMEOUT=30" >> .env
+echo "SELENIUM_PAGE_LOAD_WAIT=3.0" >> .env
+```
 
 ### Erreur de connexion
 

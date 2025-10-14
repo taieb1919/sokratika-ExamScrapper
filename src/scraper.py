@@ -1,38 +1,52 @@
 """
-Web scraper for DNB exam papers.
+Web scraper for DNB exam papers with Selenium pagination support.
 
 This module provides the DNBScraper class which handles:
-- Fetching web pages
+- Fetching web pages with Selenium WebDriver
+- Navigating through pagination
 - Extracting PDF download links from /document/*/download format
 - Parsing data-atl-name attributes for metadata
 """
 
-import requests
-from bs4 import BeautifulSoup
+import time
+import re
 from typing import List, Dict, Optional, Set
-from urllib.parse import urljoin, urlparse
+from urllib.parse import urljoin
 from loguru import logger
+from bs4 import BeautifulSoup
+
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import (
+    TimeoutException,
+    NoSuchElementException,
+    ElementNotInteractableException,
+    StaleElementReferenceException
+)
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
 
 from config.settings import (
     BASE_URL,
-    HEADERS,
-    DOWNLOAD_TIMEOUT,
+    SELENIUM_HEADLESS,
+    SELENIUM_TIMEOUT,
+    SELENIUM_PAGE_LOAD_WAIT,
     MAX_RETRIES,
-    RETRY_BACKOFF_FACTOR,
-    VERIFY_SSL,
 )
-from src.utils import rate_limited, retry_on_failure, is_valid_url
 from src.parser import MetadataParser
 
 
 class DNBScraper:
     """
-    Scraper for DNB (Diplôme National du Brevet) exam papers.
+    Scraper for DNB (Diplôme National du Brevet) exam papers with pagination support.
     
-    This class handles fetching the DNB annales page and extracting
-    all PDF download links in the format /document/*/download.
+    This class uses Selenium WebDriver to handle JavaScript-based pagination
+    and extract all PDF download links across multiple pages.
     
     The HTML structure is:
+    - Pagination with buttons: Premier, Précédent, [1][2][3]..., Suivant, Dernier
     - <tbody> contains rows <tr>
     - Each <tr> has columns: Session, Discipline, Série, Localisation, Liens
     - Links are in <td> with class "views-field-link"
@@ -41,8 +55,9 @@ class DNBScraper:
     
     Attributes:
         base_url: The base URL to scrape
-        session: Requests session for HTTP connections
+        driver: Selenium WebDriver instance
         parser: MetadataParser instance for link analysis
+        headless: Run browser in headless mode
     
     Example:
         >>> scraper = DNBScraper()
@@ -52,105 +67,195 @@ class DNBScraper:
         >>> print(f"Total: {summary['total']}")
     """
     
-    def __init__(self, base_url: str = BASE_URL):
+    def __init__(self, base_url: str = BASE_URL, headless: bool = SELENIUM_HEADLESS):
         """
-        Initialize the DNB scraper.
+        Initialize the DNB scraper with Selenium.
         
         Args:
             base_url: The URL to scrape (default: from settings)
+            headless: Run browser in headless mode (default: from settings)
         """
         self.base_url = base_url
-        self.session = requests.Session()
-        self.session.headers.update(HEADERS)
+        self.headless = headless
+        self.driver: Optional[webdriver.Chrome] = None
         self.parser = MetadataParser()
-        self.html_content: Optional[str] = None
-        self.soup: Optional[BeautifulSoup] = None
         self.pdf_links: List[Dict[str, str]] = []  # List of {url, data_atl_name}
         
-        logger.info(f"DNBScraper initialized with URL: {base_url}")
+        logger.info(f"DNBScraper initialized with URL: {base_url} (headless: {headless})")
     
-    @retry_on_failure(
-        max_retries=MAX_RETRIES,
-        backoff_factor=RETRY_BACKOFF_FACTOR,
-        exceptions=(requests.RequestException,)
-    )
-    @rate_limited()
-    def fetch_page(self, url: Optional[str] = None) -> str:
+    def _init_driver(self) -> webdriver.Chrome:
         """
-        Fetch the HTML content of a web page.
-        
-        Args:
-            url: URL to fetch (default: base_url)
+        Initialize Selenium Chrome WebDriver.
         
         Returns:
-            HTML content as string
-        
-        Raises:
-            requests.RequestException: If the request fails
-        
-        Example:
-            >>> scraper = DNBScraper()
-            >>> html = scraper.fetch_page()
+            Chrome WebDriver instance
         """
-        if url is None:
-            url = self.base_url
+        logger.info("Initializing Selenium WebDriver")
         
-        logger.info(f"Fetching page: {url}")
+        chrome_options = Options()
+        
+        if self.headless:
+            chrome_options.add_argument("--headless=new")
+            logger.debug("Running in headless mode")
+        
+        # Additional options for stability
+        chrome_options.add_argument("--no-sandbox")
+        chrome_options.add_argument("--disable-dev-shm-usage")
+        chrome_options.add_argument("--disable-gpu")
+        chrome_options.add_argument("--window-size=1920,1080")
+        chrome_options.add_argument("--disable-blink-features=AutomationControlled")
+        chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        chrome_options.add_experimental_option("useAutomationExtension", False)
+        
+        # User agent
+        chrome_options.add_argument(
+            "user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
+            "(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        )
         
         try:
-            response = self.session.get(
-                url,
-                timeout=DOWNLOAD_TIMEOUT,
-                verify=VERIFY_SSL
-            )
-            response.raise_for_status()
-            
-            self.html_content = response.text
-            logger.success(f"Successfully fetched page ({len(self.html_content)} bytes)")
-            
-            return self.html_content
-            
-        except requests.HTTPError as e:
-            logger.error(f"HTTP error fetching {url}: {e}")
-            raise
-        except requests.ConnectionError as e:
-            logger.error(f"Connection error fetching {url}: {e}")
-            raise
-        except requests.Timeout as e:
-            logger.error(f"Timeout fetching {url}: {e}")
-            raise
-        except requests.RequestException as e:
-            logger.error(f"Request error fetching {url}: {e}")
+            driver = webdriver.Chrome(options=chrome_options)
+            driver.implicitly_wait(10)
+            logger.success("WebDriver initialized successfully")
+            return driver
+        except Exception as e:
+            logger.error(f"Failed to initialize WebDriver: {e}")
+            logger.warning("Make sure Chrome and ChromeDriver are installed")
             raise
     
-    def parse_html(self, html: Optional[str] = None) -> BeautifulSoup:
+    def _extract_links_from_current_page(self) -> List[Dict[str, str]]:
         """
-        Parse HTML content into BeautifulSoup object.
-        
-        Args:
-            html: HTML content to parse (default: self.html_content)
+        Extract all PDF links from the current page.
         
         Returns:
-            BeautifulSoup object
-        
-        Raises:
-            ValueError: If no HTML content is available
+            List of dictionaries with 'url' and 'data_atl_name' keys
         """
-        if html is None:
-            if self.html_content is None:
-                raise ValueError("No HTML content to parse. Call fetch_page() first.")
-            html = self.html_content
+        pdf_data: List[Dict[str, str]] = []
         
-        logger.debug("Parsing HTML content")
-        self.soup = BeautifulSoup(html, 'lxml')
-        return self.soup
+        # Get page source and parse with BeautifulSoup
+        page_source = self.driver.page_source
+        soup = BeautifulSoup(page_source, 'lxml')
+        
+        # Find all links
+        all_links = soup.find_all('a', href=True)
+        
+        for link in all_links:
+            href = link['href']
+            
+            # Skip empty links
+            if not href:
+                continue
+            
+            # Check if it's a PDF download link
+            if self._is_pdf_link(href):
+                # Convert relative URLs to absolute
+                absolute_url = urljoin(self.base_url, href)
+                
+                # Extract data-atl-name attribute if present
+                data_atl_name = link.get('data-atl-name', '')
+                
+                pdf_data.append({
+                    'url': absolute_url,
+                    'data_atl_name': data_atl_name
+                })
+                
+                logger.debug(f"Found PDF: {absolute_url} | data-atl-name: {data_atl_name}")
+        
+        return pdf_data
+    
+    def _is_pdf_link(self, url: str) -> bool:
+        """
+        Check if a URL points to a PDF download.
+        
+        Matches URLs in the format: /document/*/download
+        
+        Args:
+            url: URL to check
+        
+        Returns:
+            True if URL matches /document/*/download pattern, False otherwise
+        """
+        pattern = r'/document/[^/]+/download'
+        return bool(re.search(pattern, url))
+    
+    def _click_next_page(self) -> bool:
+        """
+        Click the "Suivant" (Next) button to go to the next page.
+        
+        Uses JavaScript click to avoid ElementClickInterceptedException.
+        
+        Returns:
+            True if successfully clicked and navigated, False if no more pages
+        """
+        try:
+            # Wait for the "Suivant" button with simplified selector
+            # Try primary selector: a[rel='next']
+            next_button = None
+            
+            try:
+                next_button = WebDriverWait(self.driver, 5).until(
+                    EC.presence_of_element_located((By.CSS_SELECTOR, "a[rel='next']"))
+                )
+            except TimeoutException:
+                # Fallback: try title attribute
+                try:
+                    next_button = WebDriverWait(self.driver, 5).until(
+                        EC.presence_of_element_located((By.CSS_SELECTOR, "a[title*='page suivante']"))
+                    )
+                except TimeoutException:
+                    logger.info("No more pages - 'Suivant' button not found")
+                    return False
+            
+            # Check if button is disabled
+            if next_button:
+                button_class = next_button.get_attribute('class') or ''
+                parent = next_button.find_element(By.XPATH, "..")
+                parent_class = parent.get_attribute('class') or ''
+                
+                if 'is-disabled' in button_class or 'is-disabled' in parent_class:
+                    logger.info("No more pages - 'Suivant' button is disabled")
+                    return False
+                
+                # Use JavaScript click to avoid interception errors
+                logger.debug("Clicking 'Suivant' button with JavaScript")
+                self.driver.execute_script("arguments[0].click();", next_button)
+                logger.info("Clicked 'Suivant' button")
+                
+                # Wait for page to load
+                time.sleep(SELENIUM_PAGE_LOAD_WAIT)
+                
+                # Wait for the table to be present again
+                WebDriverWait(self.driver, SELENIUM_TIMEOUT).until(
+                    EC.presence_of_element_located((By.TAG_NAME, "tbody"))
+                )
+                
+                return True
+            else:
+                logger.info("No more pages - 'Suivant' button not found")
+                return False
+        
+        except (NoSuchElementException, TimeoutException) as e:
+            logger.info(f"Reached last page: {type(e).__name__}")
+            return False
+        except StaleElementReferenceException:
+            logger.warning("Stale element reference, retrying...")
+            time.sleep(1)
+            return self._click_next_page()
+        except Exception as e:
+            logger.error(f"Error clicking next page: {e}")
+            return False
     
     def extract_pdf_links(self, url: Optional[str] = None) -> List[Dict[str, str]]:
         """
-        Extract all PDF download links from the page.
+        Extract all PDF download links from all pages.
         
-        Searches for links in the format /document/*/download and extracts
-        their data-atl-name attributes for metadata.
+        This method:
+        1. Initializes the WebDriver
+        2. Navigates to the target page
+        3. Extracts links from the first page
+        4. Navigates through all pages using the "Suivant" button
+        5. Extracts links from each page
+        6. Returns all unique links
         
         Args:
             url: URL to scrape (default: base_url)
@@ -167,75 +272,92 @@ class DNBScraper:
             >>> print(pdf_links[0]['data_atl_name'])
             '24genfrdag1_v11.pdf|63414'
         """
-        # Fetch and parse the page
-        if url is not None or self.html_content is None:
-            self.fetch_page(url)
+        if url is None:
+            url = self.base_url
         
-        if self.soup is None:
-            self.parse_html()
-        
-        logger.info("Extracting PDF download links from page")
-        
-        pdf_data: List[Dict[str, str]] = []
+        all_pdf_data: List[Dict[str, str]] = []
         seen_urls: Set[str] = set()
         
-        # Find all links
-        all_links = self.soup.find_all('a', href=True)
-        logger.debug(f"Found {len(all_links)} total links on page")
-        
-        for link in all_links:
-            href = link['href']
+        try:
+            # Initialize WebDriver
+            self.driver = self._init_driver()
             
-            # Skip empty links
-            if not href:
-                continue
+            # Navigate to the page
+            logger.info(f"Navigating to: {url}")
+            self.driver.get(url)
             
-            # Convert relative URLs to absolute
-            absolute_url = urljoin(self.base_url, href)
+            # Wait for page to load
+            WebDriverWait(self.driver, SELENIUM_TIMEOUT).until(
+                EC.presence_of_element_located((By.TAG_NAME, "body"))
+            )
+            logger.success("Page loaded successfully")
             
-            # Check if it's a PDF download link
-            if self._is_pdf_link(href):
-                # Avoid duplicates
-                if absolute_url in seen_urls:
-                    continue
+            # Close any overlays, modals, or cookie banners that might intercept clicks
+            try:
+                logger.debug("Checking for overlays/modals to close")
+                close_selectors = [
+                    ".close", 
+                    "[aria-label='Close']", 
+                    ".modal-close",
+                    ".cookie-banner .close",
+                    "button.close",
+                    ".overlay-close"
+                ]
+                for selector in close_selectors:
+                    try:
+                        close_buttons = self.driver.find_elements(By.CSS_SELECTOR, selector)
+                        for btn in close_buttons:
+                            if btn.is_displayed():
+                                self.driver.execute_script("arguments[0].click();", btn)
+                                logger.debug(f"Closed overlay with selector: {selector}")
+                                time.sleep(0.5)
+                    except Exception:
+                        pass
+            except Exception as e:
+                logger.debug(f"No overlays to close or error: {e}")
+            
+            # Extract links from all pages
+            page_number = 1
+            while True:
+                logger.info(f"Extracting links from page {page_number}")
                 
-                seen_urls.add(absolute_url)
+                # Extract links from current page
+                pdf_data = self._extract_links_from_current_page()
                 
-                # Extract data-atl-name attribute if present
-                data_atl_name = link.get('data-atl-name', '')
+                # Add unique links
+                new_links = 0
+                for link_data in pdf_data:
+                    if link_data['url'] not in seen_urls:
+                        seen_urls.add(link_data['url'])
+                        all_pdf_data.append(link_data)
+                        new_links += 1
                 
-                pdf_data.append({
-                    'url': absolute_url,
-                    'data_atl_name': data_atl_name
-                })
+                logger.info(f"Page {page_number}: Found {new_links} new PDF links")
                 
-                logger.debug(f"Found PDF: {absolute_url} | data-atl-name: {data_atl_name}")
+                # Try to go to next page
+                if not self._click_next_page():
+                    logger.info("No more pages to process")
+                    break
+                
+                page_number += 1
+                
+                # Safety limit to prevent infinite loops
+                if page_number > 100:
+                    logger.warning("Reached maximum page limit (100)")
+                    break
+            
+            self.pdf_links = all_pdf_data
+            logger.success(f"Extracted {len(self.pdf_links)} unique PDF download links from {page_number} pages")
+            
+            return self.pdf_links
         
-        self.pdf_links = pdf_data
-        logger.success(f"Extracted {len(self.pdf_links)} unique PDF download links")
-        
-        return self.pdf_links
-    
-    def _is_pdf_link(self, url: str) -> bool:
-        """
-        Check if a URL points to a PDF download.
-        
-        Matches URLs in the format: /document/*/download
-        
-        Args:
-            url: URL to check
-        
-        Returns:
-            True if URL matches /document/*/download pattern, False otherwise
-        """
-        # Check for /document/*/download pattern
-        import re
-        pattern = r'/document/[^/]+/download'
-        
-        if re.search(pattern, url):
-            return True
-        
-        return False
+        except Exception as e:
+            logger.error(f"Error during extraction: {e}")
+            raise
+        finally:
+            # Always close the driver
+            if self.driver:
+                self.close()
     
     def get_summary_dict(self) -> Dict:
         """
@@ -310,13 +432,19 @@ class DNBScraper:
     
     def close(self) -> None:
         """
-        Close the HTTP session.
+        Close the Selenium WebDriver.
         
         Returns:
             None
         """
-        self.session.close()
-        logger.debug("HTTP session closed")
+        if self.driver:
+            try:
+                self.driver.quit()
+                logger.debug("WebDriver closed")
+            except Exception as e:
+                logger.warning(f"Error closing WebDriver: {e}")
+            finally:
+                self.driver = None
     
     def __enter__(self):
         """Context manager entry."""

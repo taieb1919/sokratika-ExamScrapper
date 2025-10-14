@@ -44,6 +44,11 @@ MAX_WORKERS = int(os.getenv("MAX_WORKERS", "5"))  # concurrent downloads
 CHUNK_SIZE = 8192  # bytes for streaming downloads
 VERIFY_SSL = os.getenv("VERIFY_SSL", "True").lower() == "true"
 
+# Selenium settings
+SELENIUM_HEADLESS = os.getenv("SELENIUM_HEADLESS", "True").lower() == "true"
+SELENIUM_TIMEOUT = int(os.getenv("SELENIUM_TIMEOUT", "20"))  # seconds
+SELENIUM_PAGE_LOAD_WAIT = float(os.getenv("SELENIUM_PAGE_LOAD_WAIT", "2.0"))  # seconds between page loads
+
 # File organization
 ORGANIZE_BY_YEAR = os.getenv("ORGANIZE_BY_YEAR", "True").lower() == "true"
 ORGANIZE_BY_SUBJECT = os.getenv("ORGANIZE_BY_SUBJECT", "True").lower() == "true"
