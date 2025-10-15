@@ -126,7 +126,7 @@ python main.py download -p 2
 
 ```bash
 # Lance un parcours complet des pages et vérifie les colonnes suivantes :
-#   - Session, Discipline, Série, Localisation, TypeDocument
+#   - Session, Discipline, Série, Localisation
 # Produit un fichier validation_report.csv avec colonnes :
 #   Colonne | Valeur_Détectée | Enum_Value | Status (OK/MISSING)
 python main.py validate

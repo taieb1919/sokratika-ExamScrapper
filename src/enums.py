@@ -90,28 +90,6 @@ def normalize_serie(text: str) -> Optional[Serie]:
     return None
 
 
-class TypeDocument(str, Enum):
-    SUJET = "SUJET"
-    CORRECTION = "CORRECTION"
-    DICTEE = "DICTEE"
-    DICTEE_AMENAGEE = "DICTEE_AMENAGEE"
-
-
-def normalize_type_document(text: str) -> Optional[TypeDocument]:
-    if not text:
-        return None
-    t = text.strip().lower()
-    if re.search(r"corrig|correction|réponses|reponses|solutions", t):
-        return TypeDocument.CORRECTION
-    if re.search(r"dictée aménagée|dictee amenagee", t):
-        return TypeDocument.DICTEE_AMENAGEE
-    if re.search(r"dictée|dictee", t):
-        return TypeDocument.DICTEE
-    # Default to SUJET for non-corrections if it mentions sujet/épreuve
-    if re.search(r"sujet|épreuve|epreuve", t):
-        return TypeDocument.SUJET
-    return None
-
 
 class Discipline(str, Enum):
     # Example provided in the request

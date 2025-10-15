@@ -19,12 +19,10 @@ from src.enums import (
     Localisation,
     SessionType,
     Serie,
-    TypeDocument,
     Discipline,
     normalize_localisation,
     normalize_session,
     normalize_serie,
-    normalize_type_document,
     normalize_discipline,
 )
 
@@ -289,14 +287,10 @@ def run_validation(args: argparse.Namespace) -> None:
         else:
             add_row('Serie', val, s_enum.value, 'OK')
 
-    # Validate TypeDocument (from detected 'sujet'/'correction')
+    # Validate TypeDocument: removed from enum normalization, retain presence info only
     for val in sorted(all_values['TypeDocument']):
-        t_enum = normalize_type_document(val)
-        if t_enum is None:
-            missing = True
-            add_row('TypeDocument', val, '', 'MISSING')
-        else:
-            add_row('TypeDocument', val, t_enum.value, 'OK')
+        # we keep reporting for completeness but not mapping to enum
+        add_row('TypeDocument', val, '', 'OK')
 
     # Write CSV
     report_path = Path('validation_report.csv')

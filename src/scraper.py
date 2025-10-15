@@ -40,12 +40,10 @@ from src.enums import (
     Localisation,
     SessionType,
     Serie,
-    TypeDocument,
     Discipline,
     normalize_localisation,
     normalize_session,
     normalize_serie,
-    normalize_type_document,
     normalize_discipline,
 )
 
