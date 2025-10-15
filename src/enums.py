@@ -18,6 +18,13 @@ class Localisation(str, Enum):
     AM_SOUTH = "AM_SOUTH"
     ANTIL_GUY = "ANTIL_GUY"
     ASIA = "ASIA"
+    LIBAN = "LIBAN"
+    METROPOLE = "METROPOLE"
+    METRO_ANTIL_GUY = "METRO_ANTIL_GUY"
+    NOUVELLE_CAL = "NOUVELLE_CAL"
+    GROUPE_1 = "GROUPE_1"
+    POLYNESIE = "POLYNESIE"
+    PONDICHERY = "PONDICHERY"
 
 
 _LOCALISATION_MAP = {
@@ -29,6 +36,18 @@ _LOCALISATION_MAP = {
     "antilles , guyane": Localisation.ANTIL_GUY,
     "antilles guyane": Localisation.ANTIL_GUY,
     "asie": Localisation.ASIA,
+    "liban": Localisation.LIBAN,
+    "métropole": Localisation.METROPOLE,
+    "metropole": Localisation.METROPOLE,
+    "métropole et antilles-guyane": Localisation.METRO_ANTIL_GUY,
+    "metropole et antilles-guyane": Localisation.METRO_ANTIL_GUY,
+    "nouvelle-calédonie": Localisation.NOUVELLE_CAL,
+    "nouvelle caledonie": Localisation.NOUVELLE_CAL,
+    "groupe 1": Localisation.GROUPE_1,
+    "polynésie": Localisation.POLYNESIE,
+    "polynesie": Localisation.POLYNESIE,
+    "pondichéry": Localisation.PONDICHERY,
+    "pondichery": Localisation.PONDICHERY,
 }
 
 
@@ -36,7 +55,34 @@ def normalize_localisation(text: str) -> Optional[Localisation]:
     if not text:
         return None
     key = text.strip().lower()
-    return _LOCALISATION_MAP.get(key)
+    if key in _LOCALISATION_MAP:
+        return _LOCALISATION_MAP[key]
+
+    t = re.sub(r"\s+", " ", key)
+    # Regex fallbacks
+    if re.search(r"am[ée]rique\s+du\s+nord", t):
+        return Localisation.AM_NORTH
+    if re.search(r"am[ée]rique\s+du\s+sud", t):
+        return Localisation.AM_SOUTH
+    if re.search(r"antilles\s*,?\s*guyane", t):
+        return Localisation.ANTIL_GUY
+    if re.search(r"m[ée]tropole\s+et\s+antilles[- ]guyane", t):
+        return Localisation.METRO_ANTIL_GUY
+    if re.search(r"m[ée]tropole|metropole", t):
+        return Localisation.METROPOLE
+    if re.search(r"nouvelle[- ]cal[ée]donie", t):
+        return Localisation.NOUVELLE_CAL
+    if re.search(r"polyn[ée]sie", t):
+        return Localisation.POLYNESIE
+    if re.search(r"pondich[ée]ry", t):
+        return Localisation.PONDICHERY
+    if re.search(r"\bgroupe\s*1\b", t):
+        return Localisation.GROUPE_1
+    if re.search(r"\bliban\b", t):
+        return Localisation.LIBAN
+    if re.search(r"\basie\b", t):
+        return Localisation.ASIA
+    return None
 
 
 class SessionType(str, Enum):
@@ -77,6 +123,7 @@ def normalize_session(text: str) -> Tuple[Optional[str], Optional[SessionType]]:
 class Serie(str, Enum):
     GENERALE = "GENERALE"
     PROFESSIONNELLE = "PROFESSIONNELLE"
+    TOUTES = "TOUTES"
 
 
 def normalize_serie(text: str) -> Optional[Serie]:
@@ -87,13 +134,38 @@ def normalize_serie(text: str) -> Optional[Serie]:
         return Serie.GENERALE
     if re.search(r"\b(professionnelle|professionnel|pro)\b", t):
         return Serie.PROFESSIONNELLE
+    if re.search(r"\btoutes\b", t):
+        return Serie.TOUTES
     return None
 
 
 
 class Discipline(str, Enum):
-    # Example provided in the request
+    # Français
     FR_DICTEE = "FR_DICTEE"
+    FR_GRAM_COMP = "FR_GRAM_COMP"
+    FR_REDACTION = "FR_REDACTION"
+
+    # Histoire-Géo-EMC
+    HIST_GEO_EMC = "HIST_GEO_EMC"
+
+    # Langues Vivantes
+    LV_ALLEMAND = "LV_ALLEMAND"
+    LV_ANGLAIS = "LV_ANGLAIS"
+    LV_ARABE = "LV_ARABE"
+    LV_CHINOIS = "LV_CHINOIS"
+    LV_ESPAGNOL = "LV_ESPAGNOL"
+    LV_GREC = "LV_GREC"
+    LV_HEBREU = "LV_HEBREU"
+    LV_ITALIEN = "LV_ITALIEN"
+    LV_JAPONAIS = "LV_JAPONAIS"
+    LV_PORTUGAIS = "LV_PORTUGAIS"
+    LV_RUSSE = "LV_RUSSE"
+    LV_TURC = "LV_TURC"
+
+    # Mathématiques et Sciences
+    MATHS = "MATHS"
+    SCIENCES = "SCIENCES"
 
 
 def normalize_discipline(text: str) -> Optional[Discipline]:
@@ -104,10 +176,57 @@ def normalize_discipline(text: str) -> Optional[Discipline]:
     if not text:
         return None
     t = text.strip().lower()
+    # Français - dictée
     if ("fran" in t or re.search(r"\bfrançais|francais\b", t)) and (
-        "dict" in t or re.search(r"\bdictée|dictee\b", t)
+        "dict" in t or re.search(r"\bdict[ée]e\b", t)
     ):
         return Discipline.FR_DICTEE
+
+    # Français - grammaire / compréhension
+    if re.search(r"\bfran[çc]ais\b", t) and re.search(r"\b(grammaire|compr[ée]hension|questions?)\b", t):
+        return Discipline.FR_GRAM_COMP
+
+    # Français - rédaction
+    if re.search(r"\bfran[çc]ais\b", t) and re.search(r"\br[ée]daction\b", t):
+        return Discipline.FR_REDACTION
+
+    # Histoire-Géographie-EMC
+    if re.search(r"histo(i)?re|g[ée]ographie|\bemc\b", t):
+        return Discipline.HIST_GEO_EMC
+
+    # Langues Vivantes (match language names)
+    if re.search(r"\ballemand\b", t):
+        return Discipline.LV_ALLEMAND
+    if re.search(r"\banglais\b", t):
+        return Discipline.LV_ANGLAIS
+    if re.search(r"\barabe\b", t):
+        return Discipline.LV_ARABE
+    if re.search(r"\bchinois\b", t):
+        return Discipline.LV_CHINOIS
+    if re.search(r"\bespagnol\b", t):
+        return Discipline.LV_ESPAGNOL
+    if re.search(r"\bgrec\b", t):
+        return Discipline.LV_GREC
+    if re.search(r"\bh[ée]breu\b", t):
+        return Discipline.LV_HEBREU
+    if re.search(r"\bitalien\b", t):
+        return Discipline.LV_ITALIEN
+    if re.search(r"\bjaponais\b", t):
+        return Discipline.LV_JAPONAIS
+    if re.search(r"\bportugais\b", t):
+        return Discipline.LV_PORTUGAIS
+    if re.search(r"\brusse\b", t):
+        return Discipline.LV_RUSSE
+    if re.search(r"\bturc\b", t):
+        return Discipline.LV_TURC
+
+    # Mathématiques
+    if re.search(r"\bmath(ématiques|ematiques|s)?\b|\bmaths\b", t):
+        return Discipline.MATHS
+
+    # Sciences (inclut SVT, Physique, Chimie, Technologie)
+    if re.search(r"\bsciences?\b|\bsvt\b|physique|chimie|technologie", t):
+        return Discipline.SCIENCES
     return None
 
 
