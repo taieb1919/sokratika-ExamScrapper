@@ -40,6 +40,7 @@ def scrape_only(args: argparse.Namespace) -> None:
         # Extract PDF links
         pdf_links = scraper.extract_pdf_links(max_pages=args.pages)
         logger.info(f"Found {len(pdf_links)} PDF links")
+        logger.info(f"Structured entries: {len(getattr(scraper, 'structured_entries', []))}")
         
         # Get summary
         summary = scraper.get_summary_dict()
@@ -92,6 +93,7 @@ def download_pdfs(args: argparse.Namespace) -> None:
     with DNBScraper(base_url=args.url) as scraper:
         pdf_links = scraper.extract_pdf_links(max_pages=args.pages)
         logger.info(f"Found {len(pdf_links)} PDF links")
+        logger.info(f"Structured entries: {len(getattr(scraper, 'structured_entries', []))}")
         
         # Get summary
         summary = scraper.get_summary_dict()
@@ -203,12 +205,10 @@ def list_available(args: argparse.Namespace) -> None:
 
 def run_validation(args: argparse.Namespace, scraper: Optional[DNBScraper] = None) -> None:
     """
-    Validate distinct column values against enums.
-    Generates validation_report.csv and exits with code 1 if any missing.
-    
-    Args:
-        args: Command line arguments
-        scraper: Optional scraper instance with already collected distinct_values
+    Validate structured entries per row and generate a CSV report.
+    - For each ExamEntry: session, discipline, serie, localisation must not be None; files >= 1.
+    - Output columns: ID, Session, Discipline, Serie, Localisation, Files_Count, Status (OK/MISSING)
+    - Exit 1 if any MISSING.
     """
     import csv
     from sys import exit as sys_exit
@@ -216,68 +216,45 @@ def run_validation(args: argparse.Namespace, scraper: Optional[DNBScraper] = Non
     rows = []
     missing = False
 
-    if scraper is not None:
-        # Use already collected distinct values
-        all_values = scraper.distinct_values
+    # Ensure we have structured entries available
+    if scraper is None:
+        with DNBScraper(base_url=args.url) as s:
+            s.extract_pdf_links(max_pages=args.pages)
+            entries = getattr(s, 'structured_entries', [])
     else:
-        # Fallback: scrape from scratch (for standalone validate command)
-        with DNBScraper(base_url=args.url) as scraper:
-            scraper.extract_pdf_links(max_pages=args.pages)
-            all_values = scraper.distinct_values
+        # Reuse entries from provided scraper
+        entries = getattr(scraper, 'structured_entries', [])
 
-    def add_row(col: str, detected: str, enum_value: str, status: str) -> None:
-        rows.append({
-            'Colonne': col,
-            'Valeur_Détectée': detected,
-            'Enum_Value': enum_value,
-            'Status': status,
-        })
+    # Build CSV rows per File
+    for entry in entries:
+        files_count = len(entry.files)
+        for f in entry.files:
+            status = 'OK'
+            if not (f.file_id and f.filename and f.filename_for_save and f.download_url):
+                status = 'MISSING'
+                missing = True
 
-    # Validate Localisation
-    for val in sorted(all_values['Localisation']):
-        enum_norm = normalize_localisation(val)
-        if enum_norm is None:
-            missing = True
-            add_row('Localisation', val, '', 'MISSING')
-        else:
-            add_row('Localisation', val, enum_norm.value, 'OK')
-
-    # Validate Session -> code like 2024_NORMAL
-    for val in sorted(all_values['Session']):
-        code, session_enum = normalize_session(val)
-        if code is None:
-            missing = True
-            add_row('Session', val, '', 'MISSING')
-        else:
-            add_row('Session', val, code, 'OK')
-
-    # Validate Discipline example mapping (limited for now)
-    for val in sorted(all_values['Discipline']):
-        d_enum = normalize_discipline(val)
-        if d_enum is None:
-            missing = True
-            add_row('Discipline', val, '', 'MISSING')
-        else:
-            add_row('Discipline', val, d_enum.value, 'OK')
-
-    # Validate Serie
-    for val in sorted(all_values['Serie']):
-        s_enum = normalize_serie(val)
-        if s_enum is None:
-            missing = True
-            add_row('Serie', val, '', 'MISSING')
-        else:
-            add_row('Serie', val, s_enum.value, 'OK')
-
-    # Validate TypeDocument: removed from enum normalization, retain presence info only
-    for val in sorted(all_values['TypeDocument']):
-        # we keep reporting for completeness but not mapping to enum
-        add_row('TypeDocument', val, '', 'OK')
+            rows.append({
+                'ID': entry.id,
+                'IDFile': f.file_id or '',
+                'Session': entry.session.value if entry.session else '',
+                'Discipline': entry.discipline.value if entry.discipline else '',
+                'Serie': entry.serie.value if entry.serie else '',
+                'Localisation': entry.localisation.value if entry.localisation else '',
+                'Files_Count': files_count,
+                'Status': status,
+                'FileName': f.filename or '',
+                'FileNameToSave': f.filename_for_save or '',
+                'Link': f.download_url or '',
+            })
 
     # Write CSV
     report_path = Path('validation_report.csv')
     with open(report_path, 'w', newline='', encoding='utf-8') as f:
-        writer = csv.DictWriter(f, fieldnames=['Colonne', 'Valeur_Détectée', 'Enum_Value', 'Status'])
+        writer = csv.DictWriter(
+            f,
+            fieldnames=['ID', 'IDFile', 'Session', 'Discipline', 'Serie', 'Localisation', 'Files_Count', 'Status', 'FileName', 'FileNameToSave', 'Link']
+        )
         writer.writeheader()
         writer.writerows(rows)
 

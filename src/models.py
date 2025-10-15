@@ -16,6 +16,8 @@ from src.enums import SessionType, Discipline, Serie, Localisation
 class File:
     filename: str
     download_url: str
+    file_id: str
+    filename_for_save: str
 
 
 @dataclass

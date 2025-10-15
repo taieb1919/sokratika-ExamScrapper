@@ -1,44 +1,78 @@
-Colonne,Valeur_Détectée,Enum_Value,Status
-Localisation,Amérique du Nord,AM_NORTH,OK
-Localisation,Amérique du Sud,AM_SOUTH,OK
-Localisation,"Antilles, Guyane",ANTIL_GUY,OK
-Localisation,Asie,ASIA,OK
-Localisation,Liban,LIBAN,OK
-Localisation,Métropole,METROPOLE,OK
-Localisation,"Métropole, Antilles et Guyane",METROPOLE,OK
-Localisation,Nouvelle-Calédonie,NOUVELLE_CAL,OK
-Localisation,Pays du groupe 1,GROUPE_1,OK
-Localisation,Polynésie française,POLYNESIE,OK
-Localisation,Pondichéry,PONDICHERY,OK
-Session,2018 - épreuves normales,2018_NORMAL,OK
-Session,2019 - épreuves normales,2019_NORMAL,OK
-Session,2020 - épreuves de remplacement,2020_REMPLACEMENT,OK
-Session,2021 - épreuves normales,2021_NORMAL,OK
-Session,2022 - épreuves normales,2022_NORMAL,OK
-Session,2023 - épreuves de remplacement,2023_REMPLACEMENT,OK
-Session,2023 - épreuves normales,2023_NORMAL,OK
-Session,2024 - épreuves de remplacement,2024_REMPLACEMENT,OK
-Session,2024 - épreuves normales,2024_NORMAL,OK
-Discipline,Français - dictée,FR_DICTEE,OK
-Discipline,"Français - grammaire, compréhension",FR_GRAM_COMP,OK
-Discipline,Français - rédaction,FR_REDACTION,OK
-Discipline,"Histoire-géographie, EMC",HIST_GEO_EMC,OK
-Discipline,"Langue vivante étrangère, allemand",LV_ALLEMAND,OK
-Discipline,"Langue vivante étrangère, anglais",LV_ANGLAIS,OK
-Discipline,"Langue vivante étrangère, arabe",LV_ARABE,OK
-Discipline,"Langue vivante étrangère, chinois",LV_CHINOIS,OK
-Discipline,"Langue vivante étrangère, espagnol",LV_ESPAGNOL,OK
-Discipline,"Langue vivante étrangère, grec moderne",LV_GREC,OK
-Discipline,"Langue vivante étrangère, hébreu",LV_HEBREU,OK
-Discipline,"Langue vivante étrangère, italien",LV_ITALIEN,OK
-Discipline,"Langue vivante étrangère, japonais",LV_JAPONAIS,OK
-Discipline,"Langue vivante étrangère, portugais",LV_PORTUGAIS,OK
-Discipline,"Langue vivante étrangère, russe",LV_RUSSE,OK
-Discipline,"Langue vivante étrangère, turc",LV_TURC,OK
-Discipline,Mathématiques,MATHS,OK
-Discipline,Sciences,SCIENCES,OK
-Serie,Série générale,GENERALE,OK
-Serie,Série professionnelle,PROFESSIONNELLE,OK
-Serie,Série professionnelle agricole,PROFESSIONNELLE,OK
-Serie,Toutes séries,TOUTES,OK
-TypeDocument,sujet,,OK
+ID,IDFile,Session,Discipline,Serie,Localisation,Files_Count,Status,FileName,FileNameToSave,Link
+1,63474,NORMAL,FR_DICTEE,GENERALE,AM_NORTH,3,OK,download,1_NORMAL_FR_DICTEE_GENERALE_AM_NORTH_63474,https://eduscol.education.fr/document/63474/download
+1,63471,NORMAL,FR_DICTEE,GENERALE,AM_NORTH,3,OK,download,1_NORMAL_FR_DICTEE_GENERALE_AM_NORTH_63471,https://eduscol.education.fr/document/63471/download
+1,62978,NORMAL,FR_DICTEE,GENERALE,AM_NORTH,3,OK,download,1_NORMAL_FR_DICTEE_GENERALE_AM_NORTH_62978,https://eduscol.education.fr/document/62978/download
+2,63501,NORMAL,FR_DICTEE,GENERALE,AM_SOUTH,2,OK,download,2_NORMAL_FR_DICTEE_GENERALE_AM_SOUTH_63501,https://eduscol.education.fr/document/63501/download
+2,63498,NORMAL,FR_DICTEE,GENERALE,AM_SOUTH,2,OK,download,2_NORMAL_FR_DICTEE_GENERALE_AM_SOUTH_63498,https://eduscol.education.fr/document/63498/download
+3,63414,NORMAL,FR_DICTEE,GENERALE,ANTIL_GUY,5,OK,download,3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_63414,https://eduscol.education.fr/document/63414/download
+3,63423,NORMAL,FR_DICTEE,GENERALE,ANTIL_GUY,5,OK,download,3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_63423,https://eduscol.education.fr/document/63423/download
+3,62889,NORMAL,FR_DICTEE,GENERALE,ANTIL_GUY,5,OK,download,3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_62889,https://eduscol.education.fr/document/62889/download
+3,62892,NORMAL,FR_DICTEE,GENERALE,ANTIL_GUY,5,OK,download,3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_62892,https://eduscol.education.fr/document/62892/download
+3,62895,NORMAL,FR_DICTEE,GENERALE,ANTIL_GUY,5,OK,download,3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_62895,https://eduscol.education.fr/document/62895/download
+4,63532,NORMAL,FR_DICTEE,GENERALE,ASIA,3,OK,download,4_NORMAL_FR_DICTEE_GENERALE_ASIA_63532,https://eduscol.education.fr/document/63532/download
+4,63535,NORMAL,FR_DICTEE,GENERALE,ASIA,3,OK,download,4_NORMAL_FR_DICTEE_GENERALE_ASIA_63535,https://eduscol.education.fr/document/63535/download
+4,62996,NORMAL,FR_DICTEE,GENERALE,ASIA,3,OK,download,4_NORMAL_FR_DICTEE_GENERALE_ASIA_62996,https://eduscol.education.fr/document/62996/download
+5,63545,NORMAL,FR_DICTEE,GENERALE,METROPOLE,7,OK,download,5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63545,https://eduscol.education.fr/document/63545/download
+5,63542,NORMAL,FR_DICTEE,GENERALE,METROPOLE,7,OK,download,5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63542,https://eduscol.education.fr/document/63542/download
+5,63223,NORMAL,FR_DICTEE,GENERALE,METROPOLE,7,OK,download,5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63223,https://eduscol.education.fr/document/63223/download
+5,63226,NORMAL,FR_DICTEE,GENERALE,METROPOLE,7,OK,download,5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63226,https://eduscol.education.fr/document/63226/download
+5,63229,NORMAL,FR_DICTEE,GENERALE,METROPOLE,7,OK,download,5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63229,https://eduscol.education.fr/document/63229/download
+5,63121,NORMAL,FR_DICTEE,GENERALE,METROPOLE,7,OK,download,5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63121,https://eduscol.education.fr/document/63121/download
+5,63118,NORMAL,FR_DICTEE,GENERALE,METROPOLE,7,OK,download,5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63118,https://eduscol.education.fr/document/63118/download
+6,63689,NORMAL,FR_DICTEE,GENERALE,GROUPE_1,5,OK,download,6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63689,https://eduscol.education.fr/document/63689/download
+6,63707,NORMAL,FR_DICTEE,GENERALE,GROUPE_1,5,OK,download,6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63707,https://eduscol.education.fr/document/63707/download
+6,63017,NORMAL,FR_DICTEE,GENERALE,GROUPE_1,5,OK,download,6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63017,https://eduscol.education.fr/document/63017/download
+6,63020,NORMAL,FR_DICTEE,GENERALE,GROUPE_1,5,OK,download,6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63020,https://eduscol.education.fr/document/63020/download
+6,63023,NORMAL,FR_DICTEE,GENERALE,GROUPE_1,5,OK,download,6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63023,https://eduscol.education.fr/document/63023/download
+7,63719,NORMAL,FR_DICTEE,GENERALE,POLYNESIE,3,OK,download,7_NORMAL_FR_DICTEE_GENERALE_POLYNESIE_63719,https://eduscol.education.fr/document/63719/download
+7,63716,NORMAL,FR_DICTEE,GENERALE,POLYNESIE,3,OK,download,7_NORMAL_FR_DICTEE_GENERALE_POLYNESIE_63716,https://eduscol.education.fr/document/63716/download
+7,63078,NORMAL,FR_DICTEE,GENERALE,POLYNESIE,3,OK,download,7_NORMAL_FR_DICTEE_GENERALE_POLYNESIE_63078,https://eduscol.education.fr/document/63078/download
+8,63434,NORMAL,FR_DICTEE,PROFESSIONNELLE,ANTIL_GUY,6,OK,download,8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_63434,https://eduscol.education.fr/document/63434/download
+8,63431,NORMAL,FR_DICTEE,PROFESSIONNELLE,ANTIL_GUY,6,OK,download,8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_63431,https://eduscol.education.fr/document/63431/download
+8,62938,NORMAL,FR_DICTEE,PROFESSIONNELLE,ANTIL_GUY,6,OK,download,8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_62938,https://eduscol.education.fr/document/62938/download
+8,62941,NORMAL,FR_DICTEE,PROFESSIONNELLE,ANTIL_GUY,6,OK,download,8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_62941,https://eduscol.education.fr/document/62941/download
+8,62944,NORMAL,FR_DICTEE,PROFESSIONNELLE,ANTIL_GUY,6,OK,download,8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_62944,https://eduscol.education.fr/document/62944/download
+8,62947,NORMAL,FR_DICTEE,PROFESSIONNELLE,ANTIL_GUY,6,OK,download,8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_62947,https://eduscol.education.fr/document/62947/download
+9,63550,NORMAL,FR_DICTEE,PROFESSIONNELLE,METROPOLE,6,OK,download,9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63550,https://eduscol.education.fr/document/63550/download
+9,63547,NORMAL,FR_DICTEE,PROFESSIONNELLE,METROPOLE,6,OK,download,9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63547,https://eduscol.education.fr/document/63547/download
+9,63313,NORMAL,FR_DICTEE,PROFESSIONNELLE,METROPOLE,6,OK,download,9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63313,https://eduscol.education.fr/document/63313/download
+9,63316,NORMAL,FR_DICTEE,PROFESSIONNELLE,METROPOLE,6,OK,download,9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63316,https://eduscol.education.fr/document/63316/download
+9,63319,NORMAL,FR_DICTEE,PROFESSIONNELLE,METROPOLE,6,OK,download,9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63319,https://eduscol.education.fr/document/63319/download
+9,63163,NORMAL,FR_DICTEE,PROFESSIONNELLE,METROPOLE,6,OK,download,9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63163,https://eduscol.education.fr/document/63163/download
+10,63722,NORMAL,FR_DICTEE,PROFESSIONNELLE,POLYNESIE,3,OK,download,10_NORMAL_FR_DICTEE_PROFESSIONNELLE_POLYNESIE_63722,https://eduscol.education.fr/document/63722/download
+10,63731,NORMAL,FR_DICTEE,PROFESSIONNELLE,POLYNESIE,3,OK,download,10_NORMAL_FR_DICTEE_PROFESSIONNELLE_POLYNESIE_63731,https://eduscol.education.fr/document/63731/download
+10,63096,NORMAL,FR_DICTEE,PROFESSIONNELLE,POLYNESIE,3,OK,download,10_NORMAL_FR_DICTEE_PROFESSIONNELLE_POLYNESIE_63096,https://eduscol.education.fr/document/63096/download
+11,63477,NORMAL,FR_GRAM_COMP,GENERALE,AM_NORTH,2,OK,download,11_NORMAL_FR_GRAM_COMP_GENERALE_AM_NORTH_63477,https://eduscol.education.fr/document/63477/download
+11,62981,NORMAL,FR_GRAM_COMP,GENERALE,AM_NORTH,2,OK,download,11_NORMAL_FR_GRAM_COMP_GENERALE_AM_NORTH_62981,https://eduscol.education.fr/document/62981/download
+12,63504,NORMAL,FR_GRAM_COMP,GENERALE,AM_SOUTH,1,OK,download,12_NORMAL_FR_GRAM_COMP_GENERALE_AM_SOUTH_63504,https://eduscol.education.fr/document/63504/download
+13,63417,NORMAL,FR_GRAM_COMP,GENERALE,ANTIL_GUY,5,OK,download,13_NORMAL_FR_GRAM_COMP_GENERALE_ANTIL_GUY_63417,https://eduscol.education.fr/document/63417/download
+13,62898,NORMAL,FR_GRAM_COMP,GENERALE,ANTIL_GUY,5,OK,download,13_NORMAL_FR_GRAM_COMP_GENERALE_ANTIL_GUY_62898,https://eduscol.education.fr/document/62898/download
+13,62901,NORMAL,FR_GRAM_COMP,GENERALE,ANTIL_GUY,5,OK,download,13_NORMAL_FR_GRAM_COMP_GENERALE_ANTIL_GUY_62901,https://eduscol.education.fr/document/62901/download
+13,62904,NORMAL,FR_GRAM_COMP,GENERALE,ANTIL_GUY,5,OK,download,13_NORMAL_FR_GRAM_COMP_GENERALE_ANTIL_GUY_62904,https://eduscol.education.fr/document/62904/download
+13,62907,NORMAL,FR_GRAM_COMP,GENERALE,ANTIL_GUY,5,OK,download,13_NORMAL_FR_GRAM_COMP_GENERALE_ANTIL_GUY_62907,https://eduscol.education.fr/document/62907/download
+14,63514,NORMAL,FR_GRAM_COMP,GENERALE,ASIA,2,OK,download,14_NORMAL_FR_GRAM_COMP_GENERALE_ASIA_63514,https://eduscol.education.fr/document/63514/download
+14,62999,NORMAL,FR_GRAM_COMP,GENERALE,ASIA,2,OK,download,14_NORMAL_FR_GRAM_COMP_GENERALE_ASIA_62999,https://eduscol.education.fr/document/62999/download
+15,63536,NORMAL,FR_GRAM_COMP,GENERALE,METROPOLE,6,OK,download,15_NORMAL_FR_GRAM_COMP_GENERALE_METROPOLE_63536,https://eduscol.education.fr/document/63536/download
+15,63232,NORMAL,FR_GRAM_COMP,GENERALE,METROPOLE,6,OK,download,15_NORMAL_FR_GRAM_COMP_GENERALE_METROPOLE_63232,https://eduscol.education.fr/document/63232/download
+15,63235,NORMAL,FR_GRAM_COMP,GENERALE,METROPOLE,6,OK,download,15_NORMAL_FR_GRAM_COMP_GENERALE_METROPOLE_63235,https://eduscol.education.fr/document/63235/download
+15,63238,NORMAL,FR_GRAM_COMP,GENERALE,METROPOLE,6,OK,download,15_NORMAL_FR_GRAM_COMP_GENERALE_METROPOLE_63238,https://eduscol.education.fr/document/63238/download
+15,63130,NORMAL,FR_GRAM_COMP,GENERALE,METROPOLE,6,OK,download,15_NORMAL_FR_GRAM_COMP_GENERALE_METROPOLE_63130,https://eduscol.education.fr/document/63130/download
+15,63127,NORMAL,FR_GRAM_COMP,GENERALE,METROPOLE,6,OK,download,15_NORMAL_FR_GRAM_COMP_GENERALE_METROPOLE_63127,https://eduscol.education.fr/document/63127/download
+16,63692,NORMAL,FR_GRAM_COMP,GENERALE,GROUPE_1,4,OK,download,16_NORMAL_FR_GRAM_COMP_GENERALE_GROUPE_1_63692,https://eduscol.education.fr/document/63692/download
+16,63026,NORMAL,FR_GRAM_COMP,GENERALE,GROUPE_1,4,OK,download,16_NORMAL_FR_GRAM_COMP_GENERALE_GROUPE_1_63026,https://eduscol.education.fr/document/63026/download
+16,63029,NORMAL,FR_GRAM_COMP,GENERALE,GROUPE_1,4,OK,download,16_NORMAL_FR_GRAM_COMP_GENERALE_GROUPE_1_63029,https://eduscol.education.fr/document/63029/download
+16,63032,NORMAL,FR_GRAM_COMP,GENERALE,GROUPE_1,4,OK,download,16_NORMAL_FR_GRAM_COMP_GENERALE_GROUPE_1_63032,https://eduscol.education.fr/document/63032/download
+17,63710,NORMAL,FR_GRAM_COMP,GENERALE,POLYNESIE,2,OK,download,17_NORMAL_FR_GRAM_COMP_GENERALE_POLYNESIE_63710,https://eduscol.education.fr/document/63710/download
+17,63081,NORMAL,FR_GRAM_COMP,GENERALE,POLYNESIE,2,OK,download,17_NORMAL_FR_GRAM_COMP_GENERALE_POLYNESIE_63081,https://eduscol.education.fr/document/63081/download
+18,63425,NORMAL,FR_GRAM_COMP,PROFESSIONNELLE,ANTIL_GUY,5,OK,download,18_NORMAL_FR_GRAM_COMP_PROFESSIONNELLE_ANTIL_GUY_63425,https://eduscol.education.fr/document/63425/download
+18,62950,NORMAL,FR_GRAM_COMP,PROFESSIONNELLE,ANTIL_GUY,5,OK,download,18_NORMAL_FR_GRAM_COMP_PROFESSIONNELLE_ANTIL_GUY_62950,https://eduscol.education.fr/document/62950/download
+18,62953,NORMAL,FR_GRAM_COMP,PROFESSIONNELLE,ANTIL_GUY,5,OK,download,18_NORMAL_FR_GRAM_COMP_PROFESSIONNELLE_ANTIL_GUY_62953,https://eduscol.education.fr/document/62953/download
+18,62956,NORMAL,FR_GRAM_COMP,PROFESSIONNELLE,ANTIL_GUY,5,OK,download,18_NORMAL_FR_GRAM_COMP_PROFESSIONNELLE_ANTIL_GUY_62956,https://eduscol.education.fr/document/62956/download
+18,62959,NORMAL,FR_GRAM_COMP,PROFESSIONNELLE,ANTIL_GUY,5,OK,download,18_NORMAL_FR_GRAM_COMP_PROFESSIONNELLE_ANTIL_GUY_62959,https://eduscol.education.fr/document/62959/download
+19,63553,NORMAL,FR_GRAM_COMP,PROFESSIONNELLE,METROPOLE,5,OK,download,19_NORMAL_FR_GRAM_COMP_PROFESSIONNELLE_METROPOLE_63553,https://eduscol.education.fr/document/63553/download
+19,63322,NORMAL,FR_GRAM_COMP,PROFESSIONNELLE,METROPOLE,5,OK,download,19_NORMAL_FR_GRAM_COMP_PROFESSIONNELLE_METROPOLE_63322,https://eduscol.education.fr/document/63322/download
+19,63325,NORMAL,FR_GRAM_COMP,PROFESSIONNELLE,METROPOLE,5,OK,download,19_NORMAL_FR_GRAM_COMP_PROFESSIONNELLE_METROPOLE_63325,https://eduscol.education.fr/document/63325/download
+19,63328,NORMAL,FR_GRAM_COMP,PROFESSIONNELLE,METROPOLE,5,OK,download,19_NORMAL_FR_GRAM_COMP_PROFESSIONNELLE_METROPOLE_63328,https://eduscol.education.fr/document/63328/download
+19,63166,NORMAL,FR_GRAM_COMP,PROFESSIONNELLE,METROPOLE,5,OK,download,19_NORMAL_FR_GRAM_COMP_PROFESSIONNELLE_METROPOLE_63166,https://eduscol.education.fr/document/63166/download
+20,63725,NORMAL,FR_GRAM_COMP,PROFESSIONNELLE,POLYNESIE,2,OK,download,20_NORMAL_FR_GRAM_COMP_PROFESSIONNELLE_POLYNESIE_63725,https://eduscol.education.fr/document/63725/download
+20,63099,NORMAL,FR_GRAM_COMP,PROFESSIONNELLE,POLYNESIE,2,OK,download,20_NORMAL_FR_GRAM_COMP_PROFESSIONNELLE_POLYNESIE_63099,https://eduscol.education.fr/document/63099/download

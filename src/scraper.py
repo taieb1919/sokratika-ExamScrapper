@@ -91,6 +91,7 @@ class DNBScraper:
         self.driver: Optional[webdriver.Chrome] = None
         self.parser = MetadataParser()
         self.pdf_links: List[Dict[str, str]] = []  # List of {url, data_atl_name}
+        self.structured_entries: List[ExamEntry] = []
         self.distinct_values: Dict[str, Set[str]] = {
             'Session': set(),
             'Discipline': set(),
@@ -248,7 +249,7 @@ class DNBScraper:
         pattern = r'/document/[^/]+/download'
         return bool(re.search(pattern, url))
 
-    def extract_structured_data(self, url: Optional[str] = None, max_pages: Optional[int] = None) -> List[ExamEntry]:
+    def extract_structured_data(self, url: Optional[str] = None, max_pages: Optional[int] = None, reuse_current_driver: bool = False) -> List[ExamEntry]:
         """
         Parse all table rows across paginated pages and return structured entries.
 
@@ -264,20 +265,27 @@ class DNBScraper:
         Returns:
             List[ExamEntry]
         """
-        if url is None:
-            url = self.base_url
-
         entries: List[ExamEntry] = []
         current_id: int = 1
 
         try:
-            self.driver = self._init_driver()
-            logger.info(f"Navigating to: {url}")
-            self.driver.get(url)
-
-            WebDriverWait(self.driver, SELENIUM_TIMEOUT).until(
-                EC.presence_of_element_located((By.TAG_NAME, "tbody"))
-            )
+            if not reuse_current_driver or self.driver is None:
+                if url is None:
+                    url = self.base_url
+                self.driver = self._init_driver()
+                logger.info(f"Navigating to: {url}")
+                self.driver.get(url)
+                WebDriverWait(self.driver, SELENIUM_TIMEOUT).until(
+                    EC.presence_of_element_located((By.TAG_NAME, "tbody"))
+                )
+            else:
+                # Reuse existing driver; navigate if a URL is provided to reset to first page
+                if url is not None:
+                    logger.info(f"Reusing driver and navigating to: {url}")
+                    self.driver.get(url)
+                    WebDriverWait(self.driver, SELENIUM_TIMEOUT).until(
+                        EC.presence_of_element_located((By.TAG_NAME, "tbody"))
+                    )
 
             page_number = 1
             while True:
@@ -320,8 +328,23 @@ class DNBScraper:
                         data_atl_name = a.get('data-atl-name', '')
                         meta = self.parser.parse_url(a['href'], data_atl_name)
                         filename = meta.get('filename') or ''
+                        # Extract file_id from URL pattern /document/{ID}/download
+                        m = re.search(r"/document/([^/]+)/download", a['href'])
+                        file_id = m.group(1) if m else (meta.get('file_id') or '')
                         absolute_url = urljoin(self.base_url, a['href'])
-                        files.append(File(filename=filename, download_url=absolute_url))
+                        # Build filename_for_save
+                        filename_for_save = (
+                            f"{current_id}_{session_enum.value}_{discipline_enum.value}_"
+                            f"{serie_enum.value}_{localisation_enum.value}_{file_id}"
+                        )
+                        files.append(
+                            File(
+                                filename=filename,
+                                download_url=absolute_url,
+                                file_id=file_id,
+                                filename_for_save=filename_for_save,
+                            )
+                        )
 
                     if not files:
                         # If no files detected for this row, skip creating an entry
@@ -351,7 +374,7 @@ class DNBScraper:
             logger.success(f"Extracted {len(entries)} structured entries from {page_number} pages")
             return entries
         finally:
-            if self.driver:
+            if self.driver and not reuse_current_driver:
                 self.close()
     
     def _click_next_page(self) -> bool:
@@ -454,6 +477,8 @@ class DNBScraper:
         
         all_pdf_data: List[Dict[str, str]] = []
         seen_urls: Set[str] = set()
+        entries: List[ExamEntry] = []
+        current_id: int = 1
         
         try:
             # Initialize WebDriver
@@ -505,6 +530,70 @@ class DNBScraper:
                 page_values = self.extract_distinct_table_values()
                 for key, values in page_values.items():
                     self.distinct_values[key].update(values)
+
+                # Build structured entries from current page rows
+                try:
+                    soup = BeautifulSoup(self.driver.page_source, 'lxml')
+                    tbody = soup.find('tbody')
+                    if tbody:
+                        for tr in tbody.find_all('tr'):
+                            tds = tr.find_all('td')
+                            if len(tds) < 5:
+                                continue
+
+                            session_txt = tds[0].get_text(strip=True)
+                            discipline_txt = tds[1].get_text(strip=True)
+                            serie_txt = tds[2].get_text(strip=True)
+                            localisation_txt = tds[3].get_text(strip=True)
+
+                            _session_code, session_enum = normalize_session(session_txt)
+                            discipline_enum = normalize_discipline(discipline_txt)
+                            serie_enum = normalize_serie(serie_txt)
+                            localisation_enum = normalize_localisation(localisation_txt)
+
+                            if not (session_enum and discipline_enum and serie_enum and localisation_enum):
+                                continue
+
+                            files_in_row: List[File] = []
+                            link_td = tds[4]
+                            for a in link_td.find_all('a', href=True):
+                                if not self._is_pdf_link(a['href']):
+                                    continue
+                                data_atl_name = a.get('data-atl-name', '')
+                                meta = self.parser.parse_url(a['href'], data_atl_name)
+                                filename = meta.get('filename') or ''
+                                m = re.search(r"/document/([^/]+)/download", a['href'])
+                                file_id = m.group(1) if m else (meta.get('file_id') or '')
+                                absolute_url = urljoin(self.base_url, a['href'])
+                                filename_for_save = (
+                                    f"{current_id}_{session_enum.value}_{discipline_enum.value}_"
+                                    f"{serie_enum.value}_{localisation_enum.value}_{file_id}"
+                                )
+                                files_in_row.append(
+                                    File(
+                                        filename=filename,
+                                        download_url=absolute_url,
+                                        file_id=file_id,
+                                        filename_for_save=filename_for_save,
+                                    )
+                                )
+
+                            if not files_in_row:
+                                continue
+
+                            entries.append(
+                                ExamEntry(
+                                    id=current_id,
+                                    session=session_enum,
+                                    discipline=discipline_enum,
+                                    serie=serie_enum,
+                                    localisation=localisation_enum,
+                                    files=files_in_row,
+                                )
+                            )
+                            current_id += 1
+                except Exception as e:
+                    logger.warning(f"Failed to build structured entries on page {page_number}: {e}")
                 
                 # Add unique links
                 new_links = 0
@@ -534,8 +623,10 @@ class DNBScraper:
                     break
             
             self.pdf_links = all_pdf_data
-            logger.success(f"Extracted {len(self.pdf_links)} unique PDF download links from {page_number} pages")
-            
+            self.structured_entries = entries
+            logger.success(
+                f"Extracted {len(self.pdf_links)} unique PDF links and {len(self.structured_entries)} structured entries from {page_number} pages"
+            )
             return self.pdf_links
         
         except Exception as e:

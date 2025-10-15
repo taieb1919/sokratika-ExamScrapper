@@ -363,6 +363,8 @@ class DNBScraper:
     def get_summary_dict(self) -> Dict
     def close(self) -> None  # Ferme le WebDriver
     def extract_distinct_table_values(self) -> Dict[str, Set[str]]  # valeurs par page
+    # Après extraction, les entrées structurées par ligne sont disponibles:
+    # scraper.structured_entries: List[ExamEntry]
 ```
 
 **Nouvelles fonctionnalités :**
