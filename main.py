@@ -40,7 +40,7 @@ def scrape_only(args: argparse.Namespace) -> None:
     
     with DNBScraper(base_url=args.url) as scraper:
         # Extract PDF links
-        pdf_links = scraper.extract_pdf_links()
+        pdf_links = scraper.extract_pdf_links(max_pages=args.pages)
         logger.info(f"Found {len(pdf_links)} PDF links")
         
         # Get summary
@@ -92,7 +92,7 @@ def download_pdfs(args: argparse.Namespace) -> None:
     
     # Scrape links
     with DNBScraper(base_url=args.url) as scraper:
-        pdf_links = scraper.extract_pdf_links()
+        pdf_links = scraper.extract_pdf_links(max_pages=args.pages)
         logger.info(f"Found {len(pdf_links)} PDF links")
         
         # Get summary
@@ -177,7 +177,7 @@ def list_available(args: argparse.Namespace) -> None:
     logger.info("Listing available years and subjects")
     
     with DNBScraper(base_url=args.url) as scraper:
-        pdf_links = scraper.extract_pdf_links()
+        pdf_links = scraper.extract_pdf_links(max_pages=args.pages)
         summary = scraper.get_summary_dict()
         
         years = summary['years']
@@ -237,6 +237,8 @@ def run_validation(args: argparse.Namespace) -> None:
             page_vals = scraper.extract_distinct_table_values()
             for k, vals in page_vals.items():
                 all_values[k].update(vals)
+            if args.pages is not None and page_num >= args.pages:
+                break
             if not scraper._click_next_page():
                 break
             page_num += 1
@@ -366,6 +368,12 @@ Examples:
         type=str,
         help='Output file to save links'
     )
+    scrape_parser.add_argument(
+        '--pages', '-p',
+        type=int,
+        default=None,
+        help='Limit the number of pages to scrape (default: all)'
+    )
     
     # Download command
     download_parser = subparsers.add_parser(
@@ -392,6 +400,12 @@ Examples:
         action='store_true',
         help='Do not organize files by year/subject'
     )
+    download_parser.add_argument(
+        '--pages', '-p',
+        type=int,
+        default=None,
+        help='Limit the number of pages to scrape (default: all)'
+    )
     
     # List command
     list_parser = subparsers.add_parser(
@@ -403,11 +417,23 @@ Examples:
         action='store_true',
         help='Additionally validate enums and generate CSV report'
     )
+    list_parser.add_argument(
+        '--pages', '-p',
+        type=int,
+        default=None,
+        help='Limit the number of pages to scrape (default: all)'
+    )
 
     # Validate command
     validate_parser = subparsers.add_parser(
         'validate',
         help='Validate scraped column values against enums and generate CSV report'
+    )
+    validate_parser.add_argument(
+        '--pages', '-p',
+        type=int,
+        default=None,
+        help='Limit the number of pages to scrape (default: all)'
     )
     
     # Parse arguments

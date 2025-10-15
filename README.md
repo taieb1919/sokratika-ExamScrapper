@@ -80,6 +80,9 @@ python main.py list
 
 # Optionnel: lister et lancer une validation des valeurs (enums)
 python main.py list --validate
+
+# Limiter le nombre de pages parcourues (ex: 2 premières pages)
+python main.py list -p 2
 ```
 
 Affiche toutes les années et matières disponibles avec le nombre de fichiers pour chacune.
@@ -92,6 +95,9 @@ python main.py scrape
 
 # Sauvegarder les liens dans un fichier
 python main.py scrape --output links.txt
+
+# Limiter à N pages (ex: 3)
+python main.py scrape -p 3
 ```
 
 #### 3. Télécharger les PDFs
@@ -111,6 +117,9 @@ python main.py download --force
 
 # Désactiver l'organisation par année/matière
 python main.py download --no-organize
+
+# Limiter à 2 pages
+python main.py download -p 2
 ```
 
 #### 4. Valider les valeurs scrapées (enums) et générer un CSV
@@ -121,6 +130,9 @@ python main.py download --no-organize
 # Produit un fichier validation_report.csv avec colonnes :
 #   Colonne | Valeur_Détectée | Enum_Value | Status (OK/MISSING)
 python main.py validate
+
+# Limiter à 2 pages pour la validation
+python main.py validate -p 2
 ```
 
 ### Utilisation programmatique
@@ -347,7 +359,7 @@ data/raw/
 ```python
 class DNBScraper:
     def __init__(self, base_url: str = BASE_URL, headless: bool = True)
-    def extract_pdf_links(self, url: Optional[str] = None) -> List[Dict[str, str]]
+    def extract_pdf_links(self, url: Optional[str] = None, max_pages: Optional[int] = None) -> List[Dict[str, str]]
     def get_summary_dict(self) -> Dict
     def close(self) -> None  # Ferme le WebDriver
     def extract_distinct_table_values(self) -> Dict[str, Set[str]]  # valeurs par page

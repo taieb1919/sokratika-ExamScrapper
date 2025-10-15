@@ -309,7 +309,7 @@ class DNBScraper:
             logger.error(f"Error clicking next page: {e}")
             return False
     
-    def extract_pdf_links(self, url: Optional[str] = None) -> List[Dict[str, str]]:
+    def extract_pdf_links(self, url: Optional[str] = None, max_pages: Optional[int] = None) -> List[Dict[str, str]]:
         """
         Extract all PDF download links from all pages.
         
@@ -323,6 +323,7 @@ class DNBScraper:
         
         Args:
             url: URL to scrape (default: base_url)
+            max_pages: If provided, stops after scraping this many pages
         
         Returns:
             List of dictionaries with 'url' and 'data_atl_name' keys
@@ -397,6 +398,11 @@ class DNBScraper:
                         new_links += 1
                 
                 logger.info(f"Page {page_number}: Found {new_links} new PDF links")
+
+                # Stop if we reached the requested max_pages
+                if max_pages is not None and page_number >= max_pages:
+                    logger.info(f"Reached max pages limit ({max_pages}), stopping pagination")
+                    break
                 
                 # Try to go to next page
                 if not self._click_next_page():
