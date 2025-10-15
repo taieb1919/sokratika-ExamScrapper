@@ -90,6 +90,13 @@ class DNBScraper:
         self.driver: Optional[webdriver.Chrome] = None
         self.parser = MetadataParser()
         self.pdf_links: List[Dict[str, str]] = []  # List of {url, data_atl_name}
+        self.distinct_values: Dict[str, Set[str]] = {
+            'Session': set(),
+            'Discipline': set(),
+            'Serie': set(),
+            'Localisation': set(),
+            'TypeDocument': set(),
+        }
         
         logger.info(f"DNBScraper initialized with URL: {base_url} (headless: {headless})")
     
@@ -386,6 +393,11 @@ class DNBScraper:
                 
                 # Extract links from current page
                 pdf_data = self._extract_links_from_current_page()
+                
+                # Also collect distinct table values from current page
+                page_values = self.extract_distinct_table_values()
+                for key, values in page_values.items():
+                    self.distinct_values[key].update(values)
                 
                 # Add unique links
                 new_links = 0

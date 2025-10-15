@@ -198,13 +198,17 @@ def list_available(args: argparse.Namespace) -> None:
         print("\n" + "="*60 + "\n")
 
         if getattr(args, 'validate', False):
-            run_validation(args)
+            run_validation(args, scraper)
 
 
-def run_validation(args: argparse.Namespace) -> None:
+def run_validation(args: argparse.Namespace, scraper: Optional[DNBScraper] = None) -> None:
     """
-    Scrape and validate distinct column values against enums.
+    Validate distinct column values against enums.
     Generates validation_report.csv and exits with code 1 if any missing.
+    
+    Args:
+        args: Command line arguments
+        scraper: Optional scraper instance with already collected distinct_values
     """
     import csv
     from sys import exit as sys_exit
@@ -212,36 +216,14 @@ def run_validation(args: argparse.Namespace) -> None:
     rows = []
     missing = False
 
-    with DNBScraper(base_url=args.url) as scraper:
-        all_values = {
-            'Session': set(),
-            'Discipline': set(),
-            'Serie': set(),
-            'Localisation': set(),
-            'TypeDocument': set(),
-        }
-
-        # Traverse all pages while also collecting distinct values
-        url = args.url
-        scraper.driver = scraper._init_driver()
-        scraper.driver.get(url)
-        from selenium.webdriver.support.ui import WebDriverWait
-        from selenium.webdriver.common.by import By
-        from selenium.webdriver.support import expected_conditions as EC
-        WebDriverWait(scraper.driver, 20).until(EC.presence_of_element_located((By.TAG_NAME, "tbody")))
-
-        page_num = 1
-        while True:
-            page_vals = scraper.extract_distinct_table_values()
-            for k, vals in page_vals.items():
-                all_values[k].update(vals)
-            if args.pages is not None and page_num >= args.pages:
-                break
-            if not scraper._click_next_page():
-                break
-            page_num += 1
-
-        scraper.close()
+    if scraper is not None:
+        # Use already collected distinct values
+        all_values = scraper.distinct_values
+    else:
+        # Fallback: scrape from scratch (for standalone validate command)
+        with DNBScraper(base_url=args.url) as scraper:
+            scraper.extract_pdf_links(max_pages=args.pages)
+            all_values = scraper.distinct_values
 
     def add_row(col: str, detected: str, enum_value: str, status: str) -> None:
         rows.append({
