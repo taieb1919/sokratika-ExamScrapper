@@ -1,0 +1,44 @@
+Colonne,Valeur_Détectée,Enum_Value,Status
+Localisation,Amérique du Nord,AM_NORTH,OK
+Localisation,Amérique du Sud,AM_SOUTH,OK
+Localisation,"Antilles, Guyane",ANTIL_GUY,OK
+Localisation,Asie,ASIA,OK
+Localisation,Liban,,MISSING
+Localisation,Métropole,,MISSING
+Localisation,"Métropole, Antilles et Guyane",,MISSING
+Localisation,Nouvelle-Calédonie,,MISSING
+Localisation,Pays du groupe 1,,MISSING
+Localisation,Polynésie française,,MISSING
+Localisation,Pondichéry,,MISSING
+Session,2018 - épreuves normales,2018_NORMAL,OK
+Session,2019 - épreuves normales,2019_NORMAL,OK
+Session,2020 - épreuves de remplacement,2020_REMPLACEMENT,OK
+Session,2021 - épreuves normales,2021_NORMAL,OK
+Session,2022 - épreuves normales,2022_NORMAL,OK
+Session,2023 - épreuves de remplacement,2023_REMPLACEMENT,OK
+Session,2023 - épreuves normales,2023_NORMAL,OK
+Session,2024 - épreuves de remplacement,2024_REMPLACEMENT,OK
+Session,2024 - épreuves normales,2024_NORMAL,OK
+Discipline,Français - dictée,FR_DICTEE,OK
+Discipline,"Français - grammaire, compréhension",,MISSING
+Discipline,Français - rédaction,,MISSING
+Discipline,"Histoire-géographie, EMC",,MISSING
+Discipline,"Langue vivante étrangère, allemand",,MISSING
+Discipline,"Langue vivante étrangère, anglais",,MISSING
+Discipline,"Langue vivante étrangère, arabe",,MISSING
+Discipline,"Langue vivante étrangère, chinois",,MISSING
+Discipline,"Langue vivante étrangère, espagnol",,MISSING
+Discipline,"Langue vivante étrangère, grec moderne",,MISSING
+Discipline,"Langue vivante étrangère, hébreu",,MISSING
+Discipline,"Langue vivante étrangère, italien",,MISSING
+Discipline,"Langue vivante étrangère, japonais",,MISSING
+Discipline,"Langue vivante étrangère, portugais",,MISSING
+Discipline,"Langue vivante étrangère, russe",,MISSING
+Discipline,"Langue vivante étrangère, turc",,MISSING
+Discipline,Mathématiques,,MISSING
+Discipline,Sciences,,MISSING
+Serie,Série générale,GENERALE,OK
+Serie,Série professionnelle,PROFESSIONNELLE,OK
+Serie,Série professionnelle agricole,PROFESSIONNELLE,OK
+Serie,Toutes séries,,MISSING
+TypeDocument,sujet,SUJET,OK

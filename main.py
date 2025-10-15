@@ -15,6 +15,18 @@ from config.settings import BASE_URL, RAW_DATA_DIR, MAX_WORKERS
 from src.scraper import DNBScraper
 from src.downloader import PDFDownloader
 from src.utils import setup_logging
+from src.enums import (
+    Localisation,
+    SessionType,
+    Serie,
+    TypeDocument,
+    Discipline,
+    normalize_localisation,
+    normalize_session,
+    normalize_serie,
+    normalize_type_document,
+    normalize_discipline,
+)
 
 
 def scrape_only(args: argparse.Namespace) -> None:
@@ -187,7 +199,115 @@ def list_available(args: argparse.Namespace) -> None:
         
         print("\n" + "="*60 + "\n")
 
+        if getattr(args, 'validate', False):
+            run_validation(args)
 
+
+def run_validation(args: argparse.Namespace) -> None:
+    """
+    Scrape and validate distinct column values against enums.
+    Generates validation_report.csv and exits with code 1 if any missing.
+    """
+    import csv
+    from sys import exit as sys_exit
+
+    rows = []
+    missing = False
+
+    with DNBScraper(base_url=args.url) as scraper:
+        all_values = {
+            'Session': set(),
+            'Discipline': set(),
+            'Serie': set(),
+            'Localisation': set(),
+            'TypeDocument': set(),
+        }
+
+        # Traverse all pages while also collecting distinct values
+        url = args.url
+        scraper.driver = scraper._init_driver()
+        scraper.driver.get(url)
+        from selenium.webdriver.support.ui import WebDriverWait
+        from selenium.webdriver.common.by import By
+        from selenium.webdriver.support import expected_conditions as EC
+        WebDriverWait(scraper.driver, 20).until(EC.presence_of_element_located((By.TAG_NAME, "tbody")))
+
+        page_num = 1
+        while True:
+            page_vals = scraper.extract_distinct_table_values()
+            for k, vals in page_vals.items():
+                all_values[k].update(vals)
+            if not scraper._click_next_page():
+                break
+            page_num += 1
+
+        scraper.close()
+
+    def add_row(col: str, detected: str, enum_value: str, status: str) -> None:
+        rows.append({
+            'Colonne': col,
+            'Valeur_Détectée': detected,
+            'Enum_Value': enum_value,
+            'Status': status,
+        })
+
+    # Validate Localisation
+    for val in sorted(all_values['Localisation']):
+        enum_norm = normalize_localisation(val)
+        if enum_norm is None:
+            missing = True
+            add_row('Localisation', val, '', 'MISSING')
+        else:
+            add_row('Localisation', val, enum_norm.value, 'OK')
+
+    # Validate Session -> code like 2024_NORMAL
+    for val in sorted(all_values['Session']):
+        code, session_enum = normalize_session(val)
+        if code is None:
+            missing = True
+            add_row('Session', val, '', 'MISSING')
+        else:
+            add_row('Session', val, code, 'OK')
+
+    # Validate Discipline example mapping (limited for now)
+    for val in sorted(all_values['Discipline']):
+        d_enum = normalize_discipline(val)
+        if d_enum is None:
+            missing = True
+            add_row('Discipline', val, '', 'MISSING')
+        else:
+            add_row('Discipline', val, d_enum.value, 'OK')
+
+    # Validate Serie
+    for val in sorted(all_values['Serie']):
+        s_enum = normalize_serie(val)
+        if s_enum is None:
+            missing = True
+            add_row('Serie', val, '', 'MISSING')
+        else:
+            add_row('Serie', val, s_enum.value, 'OK')
+
+    # Validate TypeDocument (from detected 'sujet'/'correction')
+    for val in sorted(all_values['TypeDocument']):
+        t_enum = normalize_type_document(val)
+        if t_enum is None:
+            missing = True
+            add_row('TypeDocument', val, '', 'MISSING')
+        else:
+            add_row('TypeDocument', val, t_enum.value, 'OK')
+
+    # Write CSV
+    report_path = Path('validation_report.csv')
+    with open(report_path, 'w', newline='', encoding='utf-8') as f:
+        writer = csv.DictWriter(f, fieldnames=['Colonne', 'Valeur_Détectée', 'Enum_Value', 'Status'])
+        writer.writeheader()
+        writer.writerows(rows)
+
+    print(f"Validation report written to {report_path.resolve()}")
+    if missing:
+        sys_exit(1)
+    else:
+        sys_exit(0)
 def main():
     """
     Main function with CLI argument parsing.
@@ -278,6 +398,17 @@ Examples:
         'list',
         help='List available years and subjects'
     )
+    list_parser.add_argument(
+        '--validate',
+        action='store_true',
+        help='Additionally validate enums and generate CSV report'
+    )
+
+    # Validate command
+    validate_parser = subparsers.add_parser(
+        'validate',
+        help='Validate scraped column values against enums and generate CSV report'
+    )
     
     # Parse arguments
     args = parser.parse_args()
@@ -294,6 +425,8 @@ Examples:
         download_pdfs(args)
     elif args.command == 'list':
         list_available(args)
+    elif args.command == 'validate':
+        run_validation(args)
     else:
         parser.print_help()
         sys.exit(1)

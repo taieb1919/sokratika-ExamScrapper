@@ -10,7 +10,7 @@ This module provides the DNBScraper class which handles:
 
 import time
 import re
-from typing import List, Dict, Optional, Set
+from typing import List, Dict, Optional, Set, Tuple
 from urllib.parse import urljoin
 from loguru import logger
 from bs4 import BeautifulSoup
@@ -36,6 +36,18 @@ from config.settings import (
     MAX_RETRIES,
 )
 from src.parser import MetadataParser
+from src.enums import (
+    Localisation,
+    SessionType,
+    Serie,
+    TypeDocument,
+    Discipline,
+    normalize_localisation,
+    normalize_session,
+    normalize_serie,
+    normalize_type_document,
+    normalize_discipline,
+)
 
 
 class DNBScraper:
@@ -136,7 +148,7 @@ class DNBScraper:
         page_source = self.driver.page_source
         soup = BeautifulSoup(page_source, 'lxml')
         
-        # Find all links
+        # Find table rows to also extract column text when available
         all_links = soup.find_all('a', href=True)
         
         for link in all_links:
@@ -162,6 +174,58 @@ class DNBScraper:
                 logger.debug(f"Found PDF: {absolute_url} | data-atl-name: {data_atl_name}")
         
         return pdf_data
+
+    def extract_distinct_table_values(self) -> Dict[str, Set[str]]:
+        """
+        Extract distinct values for table columns (Session, Discipline, Série, Localisation)
+        from the current page source. This relies on the page structure described in README.
+
+        Returns a dict with keys: 'Session', 'Discipline', 'Serie', 'Localisation', 'TypeDocument'
+        """
+        if not self.driver:
+            return {k: set() for k in ['Session', 'Discipline', 'Serie', 'Localisation', 'TypeDocument']}
+
+        soup = BeautifulSoup(self.driver.page_source, 'lxml')
+        values: Dict[str, Set[str]] = {
+            'Session': set(),
+            'Discipline': set(),
+            'Serie': set(),
+            'Localisation': set(),
+            'TypeDocument': set(),
+        }
+
+        tbody = soup.find('tbody')
+        if not tbody:
+            return values
+
+        for tr in tbody.find_all('tr'):
+            tds = tr.find_all('td')
+            if len(tds) < 5:
+                continue
+            session_txt = tds[0].get_text(strip=True)
+            discipline_txt = tds[1].get_text(strip=True)
+            serie_txt = tds[2].get_text(strip=True)
+            localisation_txt = tds[3].get_text(strip=True)
+            link_td = tds[4]
+            link = link_td.find('a', href=True)
+            type_txt = ''
+            if link is not None:
+                data_atl = link.get('data-atl-name', '')
+                meta = self.parser.parse_url(link['href'], data_atl)
+                type_txt = 'correction' if meta.get('document_type') == 'correction' else 'sujet'
+
+            if session_txt:
+                values['Session'].add(session_txt)
+            if discipline_txt:
+                values['Discipline'].add(discipline_txt)
+            if serie_txt:
+                values['Serie'].add(serie_txt)
+            if localisation_txt:
+                values['Localisation'].add(localisation_txt)
+            if type_txt:
+                values['TypeDocument'].add(type_txt)
+
+        return values
     
     def _is_pdf_link(self, url: str) -> bool:
         """

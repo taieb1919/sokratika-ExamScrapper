@@ -77,6 +77,9 @@ Le projet fournit trois commandes principales :
 
 ```bash
 python main.py list
+
+# Optionnel: lister et lancer une validation des valeurs (enums)
+python main.py list --validate
 ```
 
 Affiche toutes les années et matières disponibles avec le nombre de fichiers pour chacune.
@@ -108,6 +111,16 @@ python main.py download --force
 
 # Désactiver l'organisation par année/matière
 python main.py download --no-organize
+```
+
+#### 4. Valider les valeurs scrapées (enums) et générer un CSV
+
+```bash
+# Lance un parcours complet des pages et vérifie les colonnes suivantes :
+#   - Session, Discipline, Série, Localisation, TypeDocument
+# Produit un fichier validation_report.csv avec colonnes :
+#   Colonne | Valeur_Détectée | Enum_Value | Status (OK/MISSING)
+python main.py validate
 ```
 
 ### Utilisation programmatique
@@ -337,6 +350,7 @@ class DNBScraper:
     def extract_pdf_links(self, url: Optional[str] = None) -> List[Dict[str, str]]
     def get_summary_dict(self) -> Dict
     def close(self) -> None  # Ferme le WebDriver
+    def extract_distinct_table_values(self) -> Dict[str, Set[str]]  # valeurs par page
 ```
 
 **Nouvelles fonctionnalités :**
