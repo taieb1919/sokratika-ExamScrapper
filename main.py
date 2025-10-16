@@ -17,13 +17,9 @@ from src.downloader import PDFDownloader
 from src.utils import setup_logging
 
 
-
-# Simplified CLI: removed legacy scrape_only and download_pdfs
-
-
 def main_logic(args: argparse.Namespace) -> None:
     """
-    List available years and subjects.
+    Main logic for scraping, validation, and downloading.
     
     Args:
         args: Command line arguments

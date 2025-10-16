@@ -71,68 +71,52 @@ pip install -r requirements.txt
 
 ### Interface en ligne de commande (CLI)
 
-Le projet fournit trois commandes principales :
+Le projet fournit une interface CLI unifiée avec des options flexibles :
 
-#### 1. Lister les années et matières disponibles
+#### Utilisation de base
 
 ```bash
-python main.py list
-
-# Optionnel: lister et lancer une validation des valeurs (enums)
-python main.py list --validate
+# Scraper et afficher le résumé (par défaut)
+python main.py
 
 # Limiter le nombre de pages parcourues (ex: 2 premières pages)
-python main.py list -p 2
+python main.py --pages 2
 ```
 
-Affiche toutes les années et matières disponibles avec le nombre de fichiers pour chacune.
-
-#### 2. Scraper sans télécharger
+#### Validation des données
 
 ```bash
-# Extraire tous les liens PDF
-python main.py scrape
+# Valider les entrées et générer validation_report.csv
+python main.py --validate
 
-# Sauvegarder les liens dans un fichier
-python main.py scrape --output links.txt
-
-# Limiter à N pages (ex: 3)
-python main.py scrape -p 3
+# Valider en limitant à 2 pages
+python main.py --validate --pages 2
 ```
 
-#### 3. Télécharger les PDFs
+#### Téléchargement des PDFs
 
 ```bash
-# Télécharger tous les PDFs
-python main.py download
+# Télécharger tous les PDFs après scraping
+python main.py --download
 
-# Télécharger avec 10 workers concurrents
-python main.py download --workers 10
+# Télécharger en limitant à 2 pages
+python main.py --download --pages 2
 
-# Télécharger dans un répertoire personnalisé
-python main.py download --output-dir ./mes_pdfs
-
-# Forcer le re-téléchargement des fichiers existants
-python main.py download --force
-
-# Désactiver l'organisation par année/matière
-python main.py download --no-organize
-
-# Limiter à 2 pages
-python main.py download -p 2
+# Valider d'abord, puis télécharger seulement si validation OK
+python main.py --validate --download
 ```
 
-#### 4. Valider les valeurs scrapées (enums) et générer un CSV
+#### Options avancées
 
 ```bash
-# Lance un parcours complet des pages et vérifie les colonnes suivantes :
-#   - Session, Discipline, Série, Localisation
-# Produit un fichier validation_report.csv avec colonnes :
-#   Colonne | Valeur_Détectée | Enum_Value | Status (OK/MISSING)
-python main.py validate
+# Personnaliser l'URL de scraping
+python main.py --url "https://custom-url.com" --download
 
-# Limiter à 2 pages pour la validation
-python main.py validate -p 2
+# Changer le niveau de logging
+python main.py --log-level DEBUG --download
+
+# Spécifier un fichier de log personnalisé
+python main.py --log-file custom.log --download
 ```
 
 ### Utilisation programmatique
@@ -140,7 +124,6 @@ python main.py validate -p 2
 ```python
 from src.scraper import DNBScraper
 from src.downloader import PDFDownloader
-from src.parser import MetadataParser
 
 # Initialisation du scraper (headless par défaut)
 scraper = DNBScraper()
@@ -157,24 +140,42 @@ summary = scraper.get_summary_dict()
 print(f"Années disponibles: {summary['years']}")
 print(f"Matières disponibles: {summary['subjects']}")
 
-# Parser les métadonnées d'un lien
-parser = MetadataParser()
-for link_data in pdf_links[:5]:  # Premiers 5 liens
-    metadata = parser.parse_url(
-        link_data['url'], 
-        link_data.get('data_atl_name')
-    )
-    print(f"Fichier: {metadata['filename']}")
-    print(f"Année: {metadata['year']}")
-    print(f"Matière: {metadata['subject']}")
-    print(f"Type: {metadata['document_type']}")
+# Accéder aux entrées structurées (nouvelle approche)
+entries = scraper.structured_entries
+print(f"Entrées structurées: {len(entries)}")
+
+for entry in entries[:3]:  # Premiers 3 exemples
+    print(f"Session: {entry.session.value}")
+    print(f"Discipline: {entry.discipline.value}")
+    print(f"Série: {entry.serie.value}")
+    print(f"Localisation: {entry.localisation.value}")
+    print(f"Fichiers: {len(entry.files)}")
+    for f in entry.files:
+        print(f"  - {f.filename_for_save}.pdf")
     print()
 
-# Téléchargement
-urls = [link_data['url'] for link_data in pdf_links]
+# Téléchargement avec métadonnées structurées
+urls = []
+metadata_list = []
+for entry in entries:
+    for f in entry.files:
+        urls.append(f.download_url)
+        metadata_list.append({
+            'url': f.download_url,
+            'filename': f.filename_for_save + '.pdf',
+            'file_id': f.file_id,
+            'year': entry.session.value.split('_')[0] if '_' in entry.session.value else None,
+            'subject': entry.discipline.value,
+            'session': entry.session.value,
+            'series': entry.serie.value,
+            'is_correction': False,
+            'document_type': 'sujet',
+        })
+
 downloader = PDFDownloader(output_dir="data/raw")
 results = downloader.batch_download(
     urls=urls,
+    metadata={'all': metadata_list},
     max_workers=5
 )
 
@@ -363,23 +364,17 @@ class DNBScraper:
     def get_summary_dict(self) -> Dict
     def close(self) -> None  # Ferme le WebDriver
     def extract_distinct_table_values(self) -> Dict[str, Set[str]]  # valeurs par page
-    # Après extraction, les entrées structurées par ligne sont disponibles:
-    # scraper.structured_entries: List[ExamEntry]
+    
+    # Propriétés disponibles après extraction:
+    structured_entries: List[ExamEntry]  # Entrées structurées par ligne
 ```
 
-**Nouvelles fonctionnalités :**
+**Fonctionnalités principales :**
 - Mode headless (navigateur invisible) par défaut
 - Pagination automatique (parcourt toutes les pages avec JavaScript click)
 - Fermeture automatique des overlays/modals
 - Waits explicites pour une meilleure stabilité
-
-### MetadataParser
-
-```python
-class MetadataParser:
-    def __init__(self)
-    def parse_url(self, url: str, data_atl_name: Optional[str] = None) -> Dict[str, Optional[str]]
-```
+- Extraction structurée des données en objets `ExamEntry`
 
 ### PDFDownloader
 
@@ -389,6 +384,29 @@ class PDFDownloader:
     def batch_download(self, urls: List[str], metadata: Optional[Dict] = None, 
                       max_workers: int = MAX_WORKERS, skip_existing: bool = True,
                       organize: bool = True) -> Dict[str, List]
+    def print_statistics(self) -> None
+    def save_metadata(self) -> None
+    def save_failed_downloads(self) -> None
+```
+
+### Modèles de données
+
+```python
+@dataclass
+class ExamEntry:
+    id: int
+    session: SessionEnum
+    discipline: DisciplineEnum
+    serie: SerieEnum
+    localisation: LocalisationEnum
+    files: List[ExamFile]
+
+@dataclass
+class ExamFile:
+    file_id: str
+    filename: str
+    filename_for_save: str
+    download_url: str
 ```
 
 ## 🐛 Dépannage
@@ -468,23 +486,41 @@ print(f"Corrections: {stats['by_type']['correction']}")
 ```python
 from src.scraper import DNBScraper
 from src.downloader import PDFDownloader
-from src.parser import MetadataParser
 
 scraper = DNBScraper()
-pdf_links = scraper.extract_pdf_links()
+scraper.extract_pdf_links()
 
-parser = MetadataParser()
-links_2024 = []
+# Filtrer les entrées de 2024
+entries_2024 = []
+for entry in scraper.structured_entries:
+    if entry.session.value.startswith('2024'):
+        entries_2024.append(entry)
 
-for link_data in pdf_links:
-    metadata = parser.parse_url(link_data['url'], link_data.get('data_atl_name'))
-    if metadata['year'] == '2024':
-        links_2024.append(link_data['url'])
+print(f"Trouvé {len(entries_2024)} entrées pour 2024")
 
-print(f"Trouvé {len(links_2024)} PDFs pour 2024")
+# Préparer les URLs et métadonnées
+urls_2024 = []
+metadata_list_2024 = []
+for entry in entries_2024:
+    for f in entry.files:
+        urls_2024.append(f.download_url)
+        metadata_list_2024.append({
+            'url': f.download_url,
+            'filename': f.filename_for_save + '.pdf',
+            'file_id': f.file_id,
+            'year': '2024',
+            'subject': entry.discipline.value,
+            'session': entry.session.value,
+            'series': entry.serie.value,
+            'is_correction': False,
+            'document_type': 'sujet',
+        })
 
 downloader = PDFDownloader()
-results = downloader.batch_download(links_2024)
+results = downloader.batch_download(
+    urls=urls_2024,
+    metadata={'all': metadata_list_2024}
+)
 ```
 
 ## ⚖️ Licence

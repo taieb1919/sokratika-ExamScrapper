@@ -396,26 +396,6 @@ class PDFDownloader:
         
         logger.warning(f"Saved {len(self.failed_downloads)} failed downloads to {filepath}")
     
-    def load_metadata(self, filepath: Path = METADATA_FILE) -> List[Dict]:
-        """
-        Load download history from JSON file.
-        
-        Args:
-            filepath: Path to metadata file
-        
-        Returns:
-            List of download records
-        """
-        if not filepath.exists():
-            logger.warning(f"Metadata file not found: {filepath}")
-            return []
-        
-        with open(filepath, 'r', encoding='utf-8') as f:
-            self.download_history = json.load(f)
-        
-        logger.info(f"Loaded {len(self.download_history)} download records")
-        return self.download_history
-    
     def get_statistics(self) -> Dict:
         """
         Get download statistics.

@@ -1,0 +1,665 @@
+[
+  {
+    "url": "https://eduscol.education.fr/document/63474/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\1_NORMAL_FR_DICTEE_GENERALE_AM_NORTH_63474.pdf",
+    "size": 1483508,
+    "timestamp": "2025-10-16T12:20:14.677248",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63474/download",
+      "filename": "1_NORMAL_FR_DICTEE_GENERALE_AM_NORTH_63474.pdf",
+      "file_id": "63474",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63501/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\2_NORMAL_FR_DICTEE_GENERALE_AM_SOUTH_63501.pdf",
+    "size": 1499745,
+    "timestamp": "2025-10-16T12:20:16.510877",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63501/download",
+      "filename": "2_NORMAL_FR_DICTEE_GENERALE_AM_SOUTH_63501.pdf",
+      "file_id": "63501",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63471/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\1_NORMAL_FR_DICTEE_GENERALE_AM_NORTH_63471.pdf",
+    "size": 1637684,
+    "timestamp": "2025-10-16T12:20:16.760240",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63471/download",
+      "filename": "1_NORMAL_FR_DICTEE_GENERALE_AM_NORTH_63471.pdf",
+      "file_id": "63471",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/62978/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\1_NORMAL_FR_DICTEE_GENERALE_AM_NORTH_62978.pdf",
+    "size": 835555,
+    "timestamp": "2025-10-16T12:20:17.109218",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/62978/download",
+      "filename": "1_NORMAL_FR_DICTEE_GENERALE_AM_NORTH_62978.pdf",
+      "file_id": "62978",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63498/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\2_NORMAL_FR_DICTEE_GENERALE_AM_SOUTH_63498.pdf",
+    "size": 1625481,
+    "timestamp": "2025-10-16T12:20:17.203567",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63498/download",
+      "filename": "2_NORMAL_FR_DICTEE_GENERALE_AM_SOUTH_63498.pdf",
+      "file_id": "63498",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63414/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_63414.pdf",
+    "size": 86213,
+    "timestamp": "2025-10-16T12:20:19.257644",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63414/download",
+      "filename": "3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_63414.pdf",
+      "file_id": "63414",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63423/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_63423.pdf",
+    "size": 63913,
+    "timestamp": "2025-10-16T12:20:19.650002",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63423/download",
+      "filename": "3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_63423.pdf",
+      "file_id": "63423",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/62889/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_62889.pdf",
+    "size": 607431,
+    "timestamp": "2025-10-16T12:20:20.404107",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/62889/download",
+      "filename": "3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_62889.pdf",
+      "file_id": "62889",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/62895/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_62895.pdf",
+    "size": 607287,
+    "timestamp": "2025-10-16T12:20:20.784159",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/62895/download",
+      "filename": "3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_62895.pdf",
+      "file_id": "62895",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/62892/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_62892.pdf",
+    "size": 608903,
+    "timestamp": "2025-10-16T12:20:20.936944",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/62892/download",
+      "filename": "3_NORMAL_FR_DICTEE_GENERALE_ANTIL_GUY_62892.pdf",
+      "file_id": "62892",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63532/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\4_NORMAL_FR_DICTEE_GENERALE_ASIA_63532.pdf",
+    "size": 1483103,
+    "timestamp": "2025-10-16T12:20:21.852589",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63532/download",
+      "filename": "4_NORMAL_FR_DICTEE_GENERALE_ASIA_63532.pdf",
+      "file_id": "63532",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63545/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63545.pdf",
+    "size": 115711,
+    "timestamp": "2025-10-16T12:20:23.496752",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63545/download",
+      "filename": "5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63545.pdf",
+      "file_id": "63545",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63535/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\4_NORMAL_FR_DICTEE_GENERALE_ASIA_63535.pdf",
+    "size": 1591648,
+    "timestamp": "2025-10-16T12:20:23.520147",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63535/download",
+      "filename": "4_NORMAL_FR_DICTEE_GENERALE_ASIA_63535.pdf",
+      "file_id": "63535",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/62996/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\4_NORMAL_FR_DICTEE_GENERALE_ASIA_62996.pdf",
+    "size": 778773,
+    "timestamp": "2025-10-16T12:20:23.541660",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/62996/download",
+      "filename": "4_NORMAL_FR_DICTEE_GENERALE_ASIA_62996.pdf",
+      "file_id": "62996",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63223/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63223.pdf",
+    "size": 1483127,
+    "timestamp": "2025-10-16T12:20:25.344033",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63223/download",
+      "filename": "5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63223.pdf",
+      "file_id": "63223",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63542/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63542.pdf",
+    "size": 149017,
+    "timestamp": "2025-10-16T12:20:25.581609",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63542/download",
+      "filename": "5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63542.pdf",
+      "file_id": "63542",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63226/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63226.pdf",
+    "size": 1484016,
+    "timestamp": "2025-10-16T12:20:26.559185",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63226/download",
+      "filename": "5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63226.pdf",
+      "file_id": "63226",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63229/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63229.pdf",
+    "size": 1482475,
+    "timestamp": "2025-10-16T12:20:27.298223",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63229/download",
+      "filename": "5_NORMAL_FR_DICTEE_GENERALE_METROPOLE_63229.pdf",
+      "file_id": "63229",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63017/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63017.pdf",
+    "size": 852778,
+    "timestamp": "2025-10-16T12:20:30.580424",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63017/download",
+      "filename": "6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63017.pdf",
+      "file_id": "63017",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63707/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63707.pdf",
+    "size": 343544,
+    "timestamp": "2025-10-16T12:20:30.819180",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63707/download",
+      "filename": "6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63707.pdf",
+      "file_id": "63707",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63689/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63689.pdf",
+    "size": 84422,
+    "timestamp": "2025-10-16T12:20:30.910639",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63689/download",
+      "filename": "6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63689.pdf",
+      "file_id": "63689",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63020/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63020.pdf",
+    "size": 911333,
+    "timestamp": "2025-10-16T12:20:32.019877",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63020/download",
+      "filename": "6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63020.pdf",
+      "file_id": "63020",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63023/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63023.pdf",
+    "size": 823057,
+    "timestamp": "2025-10-16T12:20:33.925994",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63023/download",
+      "filename": "6_NORMAL_FR_DICTEE_GENERALE_GROUPE_1_63023.pdf",
+      "file_id": "63023",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63434/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_63434.pdf",
+    "size": 116060,
+    "timestamp": "2025-10-16T12:20:35.087460",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63434/download",
+      "filename": "8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_63434.pdf",
+      "file_id": "63434",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63719/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\7_NORMAL_FR_DICTEE_GENERALE_POLYNESIE_63719.pdf",
+    "size": 256897,
+    "timestamp": "2025-10-16T12:20:35.241851",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63719/download",
+      "filename": "7_NORMAL_FR_DICTEE_GENERALE_POLYNESIE_63719.pdf",
+      "file_id": "63719",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63078/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\7_NORMAL_FR_DICTEE_GENERALE_POLYNESIE_63078.pdf",
+    "size": 1463969,
+    "timestamp": "2025-10-16T12:20:35.390724",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63078/download",
+      "filename": "7_NORMAL_FR_DICTEE_GENERALE_POLYNESIE_63078.pdf",
+      "file_id": "63078",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/62938/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_62938.pdf",
+    "size": 586735,
+    "timestamp": "2025-10-16T12:20:37.723990",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/62938/download",
+      "filename": "8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_62938.pdf",
+      "file_id": "62938",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/62944/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_62944.pdf",
+    "size": 586238,
+    "timestamp": "2025-10-16T12:20:38.065079",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/62944/download",
+      "filename": "8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_62944.pdf",
+      "file_id": "62944",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63716/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\7_NORMAL_FR_DICTEE_GENERALE_POLYNESIE_63716.pdf",
+    "size": 170384,
+    "timestamp": "2025-10-16T12:20:39.334203",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63716/download",
+      "filename": "7_NORMAL_FR_DICTEE_GENERALE_POLYNESIE_63716.pdf",
+      "file_id": "63716",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "GENERALE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63431/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_63431.pdf",
+    "size": 126536,
+    "timestamp": "2025-10-16T12:20:40.039487",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63431/download",
+      "filename": "8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_63431.pdf",
+      "file_id": "63431",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63550/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63550.pdf",
+    "size": 260240,
+    "timestamp": "2025-10-16T12:20:42.191945",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63550/download",
+      "filename": "9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63550.pdf",
+      "file_id": "63550",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63313/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63313.pdf",
+    "size": 1502167,
+    "timestamp": "2025-10-16T12:20:43.215906",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63313/download",
+      "filename": "9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63313.pdf",
+      "file_id": "63313",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63316/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63316.pdf",
+    "size": 1504133,
+    "timestamp": "2025-10-16T12:20:44.159336",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63316/download",
+      "filename": "9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63316.pdf",
+      "file_id": "63316",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63319/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63319.pdf",
+    "size": 616283,
+    "timestamp": "2025-10-16T12:20:44.708560",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63319/download",
+      "filename": "9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63319.pdf",
+      "file_id": "63319",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/62941/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_62941.pdf",
+    "size": 586496,
+    "timestamp": "2025-10-16T12:20:45.915122",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/62941/download",
+      "filename": "8_NORMAL_FR_DICTEE_PROFESSIONNELLE_ANTIL_GUY_62941.pdf",
+      "file_id": "62941",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63547/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63547.pdf",
+    "size": 63728,
+    "timestamp": "2025-10-16T12:20:47.082252",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63547/download",
+      "filename": "9_NORMAL_FR_DICTEE_PROFESSIONNELLE_METROPOLE_63547.pdf",
+      "file_id": "63547",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63722/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\10_NORMAL_FR_DICTEE_PROFESSIONNELLE_POLYNESIE_63722.pdf",
+    "size": 107910,
+    "timestamp": "2025-10-16T12:20:48.151911",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63722/download",
+      "filename": "10_NORMAL_FR_DICTEE_PROFESSIONNELLE_POLYNESIE_63722.pdf",
+      "file_id": "63722",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63731/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\10_NORMAL_FR_DICTEE_PROFESSIONNELLE_POLYNESIE_63731.pdf",
+    "size": 191488,
+    "timestamp": "2025-10-16T12:20:52.261643",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63731/download",
+      "filename": "10_NORMAL_FR_DICTEE_PROFESSIONNELLE_POLYNESIE_63731.pdf",
+      "file_id": "63731",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  },
+  {
+    "url": "https://eduscol.education.fr/document/63096/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\FR_DICTEE\\10_NORMAL_FR_DICTEE_PROFESSIONNELLE_POLYNESIE_63096.pdf",
+    "size": 1460121,
+    "timestamp": "2025-10-16T12:20:52.884884",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63096/download",
+      "filename": "10_NORMAL_FR_DICTEE_PROFESSIONNELLE_POLYNESIE_63096.pdf",
+      "file_id": "63096",
+      "year": null,
+      "subject": "FR_DICTEE",
+      "session": "NORMAL",
+      "series": "PROFESSIONNELLE",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  }
+]

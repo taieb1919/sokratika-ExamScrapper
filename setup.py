@@ -24,7 +24,7 @@ setup(
     version="1.0.0",
     author="Sokratika",
     author_email="contact@sokratika.com",
-    description="Un outil Python professionnel pour scraper et télécharger les annales du DNB",
+    description="Un outil Python professionnel pour scraper et télécharger les annales du DNB avec CLI unifiée et extraction structurée",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url="https://github.com/taieb1919/sokratika-ExamScrapper",
@@ -83,6 +83,10 @@ setup(
         "pdf",
         "download",
         "eduscol",
+        "selenium",
+        "structured-data",
+        "validation",
+        "cli",
     ],
 )
 

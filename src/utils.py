@@ -112,22 +112,6 @@ def ensure_directory(path: Path) -> Path:
     return path
 
 
-def get_file_size_mb(file_path: Path) -> float:
-    """
-    Get file size in megabytes.
-    
-    Args:
-        file_path: Path to the file
-    
-    Returns:
-        File size in MB, or 0.0 if file doesn't exist
-    """
-    try:
-        return file_path.stat().st_size / (1024 * 1024)
-    except FileNotFoundError:
-        return 0.0
-
-
 def format_bytes(bytes_size: int) -> str:
     """
     Format bytes into human-readable format.
@@ -293,31 +277,6 @@ def create_directory_structure(base_path: Path, year: Optional[str] = None,
         path = path / subject
     
     return ensure_directory(path)
-
-
-def is_valid_url(url: str) -> bool:
-    """
-    Check if a string is a valid URL.
-    
-    Args:
-        url: String to validate
-    
-    Returns:
-        True if valid URL, False otherwise
-    
-    Example:
-        >>> is_valid_url("https://example.com/file.pdf")
-        True
-    """
-    url_pattern = re.compile(
-        r'^https?://'  # http:// or https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+[A-Z]{2,6}\.?|'  # domain
-        r'localhost|'  # localhost
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})'  # or IP
-        r'(?::\d+)?'  # optional port
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE
-    )
-    return bool(url_pattern.match(url))
 
 
 def extract_filename_from_url(url: str) -> str:
