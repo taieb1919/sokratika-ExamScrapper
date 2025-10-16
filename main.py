@@ -71,11 +71,24 @@ def main_logic(args: argparse.Namespace) -> None:
                 logger.warning("No PDFs to download")
                 return
 
-            # Prepare download inputs
-            urls = [ld['url'] for ld in pdf_links]
-            from src.parser import MetadataParser
-            parser = MetadataParser()
-            metadata = {'all': [parser.parse_url(ld['url'], ld.get('data_atl_name')) for ld in pdf_links]}
+            # Prepare download inputs from structured_entries
+            urls = []
+            metadata_list = []
+            for entry in scraper.structured_entries:
+                for f in entry.files:
+                    urls.append(f.download_url)
+                    metadata_list.append({
+                        'url': f.download_url,
+                        'filename': f.filename_for_save + '.pdf',
+                        'file_id': f.file_id,
+                        'year': entry.session.value.split('_')[0] if '_' in entry.session.value else None,
+                        'subject': entry.discipline.value,
+                        'session': entry.session.value,
+                        'series': entry.serie.value,
+                        'is_correction': False,
+                        'document_type': 'sujet',
+                    })
+            metadata = {'all': metadata_list}
 
             output_dir = RAW_DATA_DIR
             max_workers = MAX_WORKERS
