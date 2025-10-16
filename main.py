@@ -27,180 +27,85 @@ from src.enums import (
 )
 
 
-def scrape_only(args: argparse.Namespace) -> None:
-    """
-    Scrape PDF links without downloading.
-    
-    Args:
-        args: Command line arguments
-    """
-    logger.info("Starting scrape-only mode")
-    
-    with DNBScraper(base_url=args.url) as scraper:
-        # Extract PDF links
-        pdf_links = scraper.extract_pdf_links(max_pages=args.pages)
-        logger.info(f"Found {len(pdf_links)} PDF links")
-        logger.info(f"Structured entries: {len(getattr(scraper, 'structured_entries', []))}")
-        
-        # Get summary
-        summary = scraper.get_summary_dict()
-        
-        # Print summary
-        print("\n" + "="*60)
-        print("DNB SCRAPER SUMMARY")
-        print("="*60)
-        print(f"\nTotal PDFs found: {summary['total']}")
-        
-        if summary['years']:
-            print(f"\nAvailable years ({len(summary['years'])}):")
-            for year in summary['years']:
-                count = summary['by_year'].get(year, 0)
-                print(f"  - {year}: {count} files")
-        
-        if summary['subjects']:
-            print(f"\nAvailable subjects ({len(summary['subjects'])}):")
-            for subject in summary['subjects']:
-                count = summary['by_subject'].get(subject, 0)
-                print(f"  - {subject}: {count} files")
-        
-        print(f"\nDocument types:")
-        print(f"  - Sujets: {summary['by_type']['sujet']}")
-        print(f"  - Corrections: {summary['by_type']['correction']}")
-        print("\n" + "="*60 + "\n")
-        
-        # Save links to file if requested
-        if args.output:
-            output_file = Path(args.output)
-            with open(output_file, 'w', encoding='utf-8') as f:
-                for link_data in pdf_links:
-                    # Write URL and data-atl-name
-                    url = link_data['url']
-                    data_atl_name = link_data.get('data_atl_name', '')
-                    f.write(f"{url} | {data_atl_name}\n")
-            logger.success(f"Saved {len(pdf_links)} links to {output_file}")
+# Simplified CLI: removed legacy scrape_only and download_pdfs
 
 
-def download_pdfs(args: argparse.Namespace) -> None:
-    """
-    Scrape and download PDFs.
-    
-    Args:
-        args: Command line arguments
-    """
-    logger.info("Starting scrape and download mode")
-    
-    # Scrape links
-    with DNBScraper(base_url=args.url) as scraper:
-        pdf_links = scraper.extract_pdf_links(max_pages=args.pages)
-        logger.info(f"Found {len(pdf_links)} PDF links")
-        logger.info(f"Structured entries: {len(getattr(scraper, 'structured_entries', []))}")
-        
-        # Get summary
-        summary = scraper.get_summary_dict()
-        
-        # Print summary
-        print("\n" + "="*60)
-        print("DNB SCRAPER SUMMARY")
-        print("="*60)
-        print(f"\nTotal PDFs found: {summary['total']}")
-        
-        if summary['years']:
-            print(f"\nAvailable years ({len(summary['years'])}):")
-            for year in summary['years']:
-                count = summary['by_year'].get(year, 0)
-                print(f"  - {year}: {count} files")
-        
-        if summary['subjects']:
-            print(f"\nAvailable subjects ({len(summary['subjects'])}):")
-            for subject in summary['subjects']:
-                count = summary['by_subject'].get(subject, 0)
-                print(f"  - {subject}: {count} files")
-        
-        print("\n" + "="*60 + "\n")
-    
-    if not pdf_links:
-        logger.warning("No PDFs to download")
-        return
-    
-    # Download PDFs
-    output_dir = Path(args.output_dir) if args.output_dir else RAW_DATA_DIR
-    max_workers = args.workers if args.workers else MAX_WORKERS
-    
-    # Prepare URLs list for downloader (extract just the URLs)
-    urls = [link_data['url'] for link_data in pdf_links]
-    
-    # Prepare metadata for downloader
-    from src.parser import MetadataParser
-    parser = MetadataParser()
-    metadata = {
-        'all': []
-    }
-    for link_data in pdf_links:
-        meta = parser.parse_url(link_data['url'], link_data.get('data_atl_name'))
-        metadata['all'].append(meta)
-    
-    with PDFDownloader(output_dir=output_dir) as downloader:
-        logger.info(f"Downloading to: {output_dir}")
-        
-        results = downloader.batch_download(
-            urls=urls,
-            metadata=metadata,
-            max_workers=max_workers,
-            skip_existing=not args.force,
-            organize=not args.no_organize,
-        )
-        
-        # Print statistics
-        downloader.print_statistics()
-        
-        # Save metadata
-        downloader.save_metadata()
-        
-        # Save failed downloads if any
-        if results['failed']:
-            downloader.save_failed_downloads()
-            logger.warning(f"{len(results['failed'])} downloads failed")
-        
-        logger.success(
-            f"Download complete: {len(results['successful'])} successful, "
-            f"{len(results['failed'])} failed"
-        )
-
-
-def list_available(args: argparse.Namespace) -> None:
+def main_logic(args: argparse.Namespace) -> None:
     """
     List available years and subjects.
     
     Args:
         args: Command line arguments
     """
-    logger.info("Listing available years and subjects")
-    
+    logger.info("Scraping and summarizing available PDFs")
+
     with DNBScraper(base_url=args.url) as scraper:
         pdf_links = scraper.extract_pdf_links(max_pages=args.pages)
         summary = scraper.get_summary_dict()
-        
-        years = summary['years']
-        subjects = summary['subjects']
-        
-        print("\n" + "="*60)
-        print("AVAILABLE YEARS:")
-        print("="*60)
-        for year in years:
-            count = summary['by_year'].get(year, 0)
-            print(f"  - {year}: {count} files")
-        
-        print("\n" + "="*60)
-        print("AVAILABLE SUBJECTS:")
-        print("="*60)
-        for subject in subjects:
-            count = summary['by_subject'].get(subject, 0)
-            print(f"  - {subject}: {count} files")
-        
-        print("\n" + "="*60 + "\n")
 
+        # Print summary
+        print("\n" + "=" * 60)
+        print("DNB SCRAPER SUMMARY")
+        print("=" * 60)
+        print(f"\nTotal PDFs found: {summary['total']}")
+        if summary['years']:
+            print(f"\nAvailable years ({len(summary['years'])}):")
+            for year in summary['years']:
+                count = summary['by_year'].get(year, 0)
+                print(f"  - {year}: {count} files")
+        if summary['subjects']:
+            print(f"\nAvailable subjects ({len(summary['subjects'])}):")
+            for subject in summary['subjects']:
+                count = summary['by_subject'].get(subject, 0)
+                print(f"  - {subject}: {count} files")
+        print("\n" + "=" * 60 + "\n")
+
+        # Validation control
+        validation_ok = True
         if getattr(args, 'validate', False):
-            run_validation(args, scraper)
+            try:
+                run_validation(args, scraper)
+            except SystemExit as e:
+                validation_ok = (e.code == 0)
+                if not getattr(args, 'download', False):
+                    # If only validate was requested, re-raise to exit with the same code
+                    raise
+
+        # Download logic
+        if getattr(args, 'download', False):
+            if getattr(args, 'validate', False) and not validation_ok:
+                logger.error("Validation failed; aborting download as requested")
+                return
+            if not pdf_links:
+                logger.warning("No PDFs to download")
+                return
+
+            # Prepare download inputs
+            urls = [ld['url'] for ld in pdf_links]
+            from src.parser import MetadataParser
+            parser = MetadataParser()
+            metadata = {'all': [parser.parse_url(ld['url'], ld.get('data_atl_name')) for ld in pdf_links]}
+
+            output_dir = RAW_DATA_DIR
+            max_workers = MAX_WORKERS
+
+            with PDFDownloader(output_dir=output_dir) as downloader:
+                logger.info(f"Downloading to: {output_dir}")
+                results = downloader.batch_download(
+                    urls=urls,
+                    metadata=metadata,
+                    max_workers=max_workers,
+                    skip_existing=True,
+                    organize=True,
+                )
+                downloader.print_statistics()
+                downloader.save_metadata()
+                if results['failed']:
+                    downloader.save_failed_downloads()
+                    logger.warning(f"{len(results['failed'])} downloads failed")
+                logger.success(
+                    f"Download complete: {len(results['successful'])} successful, {len(results['failed'])} failed"
+                )
 
 
 def run_validation(args: argparse.Namespace, scraper: Optional[DNBScraper] = None) -> None:
@@ -268,21 +173,21 @@ def main():
     Main function with CLI argument parsing.
     """
     parser = argparse.ArgumentParser(
-        description="DNB Annales Scraper - Download exam papers from eduscol.education.fr",
+        description="DNB Annales Scraper - Unified CLI",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  # Scrape and download all PDFs
-  python main.py download
-  
-  # Scrape only (no download)
-  python main.py scrape --output links.txt
-  
-  # List available years and subjects
-  python main.py list
-  
-  # Download with custom settings
-  python main.py download --workers 10 --output-dir ./my_pdfs --force
+  # Scrape and print summary (no validation, no download)
+  python main.py
+
+  # Validate only (writes validation_report.csv and exits with code)
+  python main.py --validate -p 1
+
+  # Download regardless of validation warnings
+  python main.py --download -p 2
+
+  # Validate first, then download only if OK
+  python main.py --validate --download
         """
     )
     
@@ -308,81 +213,18 @@ Examples:
         help='Custom log file name (optional)'
     )
     
-    # Subcommands
-    subparsers = parser.add_subparsers(dest='command', help='Available commands')
-    
-    # Scrape command
-    scrape_parser = subparsers.add_parser(
-        'scrape',
-        help='Scrape PDF links without downloading'
-    )
-    scrape_parser.add_argument(
-        '--output', '-o',
-        type=str,
-        help='Output file to save links'
-    )
-    scrape_parser.add_argument(
-        '--pages', '-p',
-        type=int,
-        default=None,
-        help='Limit the number of pages to scrape (default: all)'
-    )
-    
-    # Download command
-    download_parser = subparsers.add_parser(
-        'download',
-        help='Scrape and download PDFs'
-    )
-    download_parser.add_argument(
-        '--output-dir', '-o',
-        type=str,
-        help=f'Output directory for PDFs (default: {RAW_DATA_DIR})'
-    )
-    download_parser.add_argument(
-        '--workers', '-w',
-        type=int,
-        help=f'Number of concurrent downloads (default: {MAX_WORKERS})'
-    )
-    download_parser.add_argument(
-        '--force', '-f',
-        action='store_true',
-        help='Re-download existing files'
-    )
-    download_parser.add_argument(
-        '--no-organize',
-        action='store_true',
-        help='Do not organize files by year/subject'
-    )
-    download_parser.add_argument(
-        '--pages', '-p',
-        type=int,
-        default=None,
-        help='Limit the number of pages to scrape (default: all)'
-    )
-    
-    # List command
-    list_parser = subparsers.add_parser(
-        'list',
-        help='List available years and subjects'
-    )
-    list_parser.add_argument(
+    # Simplified flags
+    parser.add_argument(
         '--validate',
         action='store_true',
-        help='Additionally validate enums and generate CSV report'
+        help='Validate entries and generate validation_report.csv'
     )
-    list_parser.add_argument(
-        '--pages', '-p',
-        type=int,
-        default=None,
-        help='Limit the number of pages to scrape (default: all)'
+    parser.add_argument(
+        '--download',
+        action='store_true',
+        help='Download PDFs after scraping (see validation rules)'
     )
-
-    # Validate command
-    validate_parser = subparsers.add_parser(
-        'validate',
-        help='Validate scraped column values against enums and generate CSV report'
-    )
-    validate_parser.add_argument(
+    parser.add_argument(
         '--pages', '-p',
         type=int,
         default=None,
@@ -397,18 +239,8 @@ Examples:
     os.environ['LOG_LEVEL'] = args.log_level
     setup_logging(log_file=args.log_file)
     
-    # Execute command
-    if args.command == 'scrape':
-        scrape_only(args)
-    elif args.command == 'download':
-        download_pdfs(args)
-    elif args.command == 'list':
-        list_available(args)
-    elif args.command == 'validate':
-        run_validation(args)
-    else:
-        parser.print_help()
-        sys.exit(1)
+    # Single entry point
+    main_logic(args)
 
 
 if __name__ == "__main__":
