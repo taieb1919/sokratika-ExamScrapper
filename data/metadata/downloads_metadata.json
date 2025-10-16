@@ -1,0 +1,19 @@
+[
+  {
+    "url": "https://eduscol.education.fr/document/63474/download",
+    "filepath": "D:\\WORK\\Sokratika\\ExamScrapper\\data\\raw\\download",
+    "size": 1483508,
+    "timestamp": "2025-10-16T11:29:18.026799",
+    "metadata": {
+      "url": "https://eduscol.education.fr/document/63474/download",
+      "filename": "download",
+      "file_id": null,
+      "year": null,
+      "subject": null,
+      "session": null,
+      "series": "generale",
+      "is_correction": false,
+      "document_type": "sujet"
+    }
+  }
+]

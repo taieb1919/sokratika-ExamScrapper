@@ -245,3 +245,47 @@ class MetadataParser:
             Document type ("sujet" or "correction")
         """
         return "correction" if self._is_correction(url, filename) else "sujet"
+    
+    def generate_organized_filename(self, metadata: Dict) -> str:
+        """
+        Generate organized filename from metadata.
+        
+        Args:
+            metadata: Metadata dictionary
+        
+        Returns:
+            Sanitized filename with .pdf extension
+        """
+        # Use original filename if available
+        if metadata.get('filename'):
+            return metadata['filename']
+        
+        # Otherwise construct from metadata
+        parts = []
+        
+        if metadata.get('year'):
+            parts.append(metadata['year'])
+        
+        if metadata.get('subject'):
+            subject = metadata['subject'].replace(' ', '_').replace('/', '_')
+            parts.append(subject)
+        
+        if metadata.get('session'):
+            parts.append(metadata['session'])
+        
+        if metadata.get('series'):
+            parts.append(metadata['series'])
+        
+        doc_type = metadata.get('document_type', 'sujet')
+        parts.append(doc_type)
+        
+        if metadata.get('file_id'):
+            parts.append(metadata['file_id'])
+        
+        filename = '_'.join(parts) + '.pdf'
+        
+        # Sanitize (import from utils if needed)
+        filename = filename.replace('é', 'e').replace('è', 'e')
+        filename = filename.replace('à', 'a').replace('ô', 'o')
+        
+        return filename

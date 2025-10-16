@@ -15,16 +15,7 @@ from config.settings import BASE_URL, RAW_DATA_DIR, MAX_WORKERS
 from src.scraper import DNBScraper
 from src.downloader import PDFDownloader
 from src.utils import setup_logging
-from src.enums import (
-    Localisation,
-    SessionType,
-    Serie,
-    Discipline,
-    normalize_localisation,
-    normalize_session,
-    normalize_serie,
-    normalize_discipline,
-)
+
 
 
 # Simplified CLI: removed legacy scrape_only and download_pdfs
