@@ -1,10 +1,10 @@
 """
-PDF downloader for DNB exam papers.
+File downloader for DNB exam papers (supports all formats: PDF, ZIP, DOC, DOCX, etc.).
 
-This module provides the PDFDownloader class which handles:
-- Downloading individual PDFs
+This module provides the FileDownloader class which handles:
+- Downloading files of any format (PDF, ZIP, DOC, DOCX, ODT, etc.)
 - Batch downloading with multi-threading
-- PDF validation
+- File validation based on type
 - Progress tracking
 """
 
@@ -45,34 +45,35 @@ from src.utils import (
 from src.parser import MetadataParser
 
 
-class PDFDownloader:
+class FileDownloader:
     """
-    Downloader for PDF files with support for batch downloads and validation.
+    Universal file downloader with support for batch downloads and validation.
     
-    This class handles downloading PDF files with features like:
+    This class handles downloading files of any format with features like:
     - Multi-threaded batch downloads
     - Automatic retries with exponential backoff
-    - PDF validation
+    - Format-specific validation (PDF, ZIP, DOC, DOCX, ODT, etc.)
     - Progress tracking
     - Metadata tracking
     
     Attributes:
-        output_dir: Directory where PDFs will be saved
+        output_dir: Directory where files will be saved
         session: Requests session for HTTP connections
         parser: MetadataParser for organizing files
     
     Example:
-        >>> downloader = PDFDownloader(output_dir="data/raw")
-        >>> downloader.download_pdf("https://example.com/file.pdf")
-        >>> downloader.batch_download(pdf_links, max_workers=5)
+        >>> downloader = FileDownloader(output_dir="data/raw")
+        >>> downloader.download_file("https://example.com/file.pdf")
+        >>> downloader.download_file("https://example.com/docs.zip")
+        >>> downloader.batch_download(file_links, max_workers=5)
     """
     
     def __init__(self, output_dir: Path = RAW_DATA_DIR):
         """
-        Initialize the PDF downloader.
+        Initialize the file downloader.
         
         Args:
-            output_dir: Directory to save downloaded PDFs
+            output_dir: Directory to save downloaded files
         """
         self.output_dir = Path(output_dir)
         ensure_directory(self.output_dir)
@@ -84,7 +85,7 @@ class PDFDownloader:
         self.download_history: List[Dict] = []
         self.failed_downloads: List[Dict] = []
         
-        logger.info(f"PDFDownloader initialized with output_dir: {self.output_dir}")
+        logger.info(f"FileDownloader initialized with output_dir: {self.output_dir}")
     
     def check_existing(self, filepath: Path) -> bool:
         """
@@ -99,48 +100,111 @@ class PDFDownloader:
         if not filepath.exists():
             return False
         
-        # Check file size
-        if filepath.stat().st_size < MIN_PDF_SIZE:
+        # Check minimum file size (100 bytes)
+        if filepath.stat().st_size < 100:
             logger.warning(f"Existing file too small: {filepath}")
             return False
         
         # Quick validation
-        if not self.validate_pdf(filepath):
+        if not self.validate_file(filepath):
             logger.warning(f"Existing file invalid: {filepath}")
             return False
         
         logger.debug(f"File already exists: {filepath}")
         return True
     
-    def validate_pdf(self, filepath: Path) -> bool:
+    def validate_file(self, filepath: Path) -> bool:
         """
-        Validate that a file is a valid PDF.
+        Validate that a downloaded file is valid based on its extension.
+        
+        Supports validation for:
+        - PDF files (checks magic bytes)
+        - ZIP archives (checks ZIP structure)
+        - DOC/DOCX files (checks structure)
+        - Other formats (basic size validation)
         
         Args:
-            filepath: Path to the PDF file
+            filepath: Path to the file
         
         Returns:
-            True if valid PDF, False otherwise
+            True if valid file, False otherwise
         """
-        try:
-            # Check file size
-            if filepath.stat().st_size < MIN_PDF_SIZE:
-                logger.warning(f"File too small to be a valid PDF: {filepath}")
-                return False
-            
-            # Check magic bytes
-            with open(filepath, 'rb') as f:
-                header = f.read(len(PDF_MAGIC_BYTES))
-                if not header.startswith(PDF_MAGIC_BYTES):
-                    logger.warning(f"Invalid PDF magic bytes: {filepath}")
-                    return False
-            
-            logger.debug(f"PDF validation passed: {filepath}")
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error validating PDF {filepath}: {e}")
+        import zipfile
+        
+        if not filepath.exists():
+            logger.error(f"File does not exist: {filepath}")
             return False
+        
+        # Check minimum file size (100 bytes)
+        if filepath.stat().st_size < 100:
+            logger.warning(f"File too small (possibly corrupted): {filepath}")
+            return False
+        
+        ext = filepath.suffix.lower()
+        
+        try:
+            if ext == '.pdf':
+                # Validate PDF header
+                if filepath.stat().st_size < MIN_PDF_SIZE:
+                    logger.warning(f"File too small to be a valid PDF: {filepath}")
+                    return False
+                
+                with open(filepath, 'rb') as f:
+                    header = f.read(len(PDF_MAGIC_BYTES))
+                    if not header.startswith(PDF_MAGIC_BYTES):
+                        logger.warning(f"Invalid PDF magic bytes: {filepath}")
+                        return False
+                
+                logger.debug(f"PDF validation passed: {filepath}")
+                return True
+            
+            elif ext == '.zip':
+                # Validate ZIP archive
+                is_valid = zipfile.is_zipfile(filepath)
+                if is_valid:
+                    logger.debug(f"ZIP validation passed: {filepath}")
+                else:
+                    logger.warning(f"Invalid ZIP file: {filepath}")
+                return is_valid
+            
+            elif ext in ['.doc', '.docx', '.odt']:
+                # DOCX and ODT are ZIP-based formats
+                if ext in ['.docx', '.odt']:
+                    is_valid = zipfile.is_zipfile(filepath)
+                    if is_valid:
+                        logger.debug(f"{ext.upper()} validation passed: {filepath}")
+                    else:
+                        logger.warning(f"Invalid {ext.upper()} file: {filepath}")
+                    return is_valid
+                else:
+                    # DOC files: check minimum size
+                    is_valid = filepath.stat().st_size > 1000
+                    if is_valid:
+                        logger.debug(f"DOC validation passed: {filepath}")
+                    else:
+                        logger.warning(f"DOC file too small: {filepath}")
+                    return is_valid
+            
+            else:
+                # Unknown file type: basic validation (existence + size)
+                logger.debug(f"Unknown file type {ext}, basic validation only: {filepath}")
+                return True
+        
+        except Exception as e:
+            logger.error(f"Error validating file {filepath}: {e}")
+            return False
+    
+    def validate_pdf(self, filepath: Path) -> bool:
+        """
+        Alias for validate_file() for backward compatibility.
+        
+        Args:
+            filepath: Path to the file
+        
+        Returns:
+            True if valid file, False otherwise
+        """
+        return self.validate_file(filepath)
     
     @retry_on_failure(
         max_retries=MAX_RETRIES,
@@ -148,7 +212,7 @@ class PDFDownloader:
         exceptions=(requests.RequestException,)
     )
     @rate_limited()
-    def download_pdf(
+    def download_file(
         self,
         url: str,
         output_path: Optional[Path] = None,
@@ -157,10 +221,10 @@ class PDFDownloader:
         organize: bool = True,
     ) -> Optional[Path]:
         """
-        Download a single PDF file.
+        Download a single file (any format: PDF, ZIP, DOC, DOCX, etc.).
         
         Args:
-            url: URL of the PDF to download
+            url: URL of the file to download
             output_path: Custom output path (optional)
             metadata: Metadata dictionary for the file
             skip_existing: Skip if file already exists
@@ -170,8 +234,9 @@ class PDFDownloader:
             Path to downloaded file, or None if failed/skipped
         
         Example:
-            >>> downloader = PDFDownloader()
-            >>> path = downloader.download_pdf("https://example.com/file.pdf")
+            >>> downloader = FileDownloader()
+            >>> path = downloader.download_file("https://example.com/file.pdf")
+            >>> path = downloader.download_file("https://example.com/docs.zip")
         """
         logger.info(f"Downloading: {url}")
         
@@ -207,8 +272,11 @@ class PDFDownloader:
             )
             response.raise_for_status()
             
-            # Get file size from headers
+            # Get file size and content type from headers
             total_size = int(response.headers.get('content-length', 0))
+            content_type = response.headers.get('content-type', 'unknown')
+            
+            logger.debug(f"Downloading {content_type}: {output_path.suffix} ({format_bytes(total_size)})")
             
             # Ensure output directory exists
             output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -224,8 +292,8 @@ class PDFDownloader:
             logger.debug(f"Downloaded {format_bytes(downloaded_size)}")
             
             # Validate downloaded file
-            if not self.validate_pdf(output_path):
-                logger.error(f"Downloaded file is not a valid PDF: {output_path}")
+            if not self.validate_file(output_path):
+                logger.error(f"Downloaded file is not valid: {output_path}")
                 output_path.unlink(missing_ok=True)
                 return None
             
@@ -286,10 +354,10 @@ class PDFDownloader:
         progress_callback: Optional[Callable] = None,
     ) -> Dict[str, List[Path]]:
         """
-        Download multiple PDFs concurrently.
+        Download multiple files concurrently (any format).
         
         Args:
-            urls: List of PDF URLs to download
+            urls: List of file URLs to download
             metadata: Optional metadata dictionary (categorized links)
             max_workers: Maximum number of concurrent downloads
             skip_existing: Skip files that already exist
@@ -300,8 +368,8 @@ class PDFDownloader:
             Dictionary with 'successful' and 'failed' lists
         
         Example:
-            >>> downloader = PDFDownloader()
-            >>> result = downloader.batch_download(pdf_links, max_workers=5)
+            >>> downloader = FileDownloader()
+            >>> result = downloader.batch_download(file_links, max_workers=5)
             >>> print(f"Downloaded: {len(result['successful'])}")
         """
         logger.info(f"Starting batch download of {len(urls)} files with {max_workers} workers")
@@ -322,7 +390,7 @@ class PDFDownloader:
             for url in urls:
                 item_metadata = metadata_lookup.get(url)
                 future = executor.submit(
-                    self.download_pdf,
+                    self.download_file,
                     url,
                     metadata=item_metadata,
                     skip_existing=skip_existing,
@@ -331,7 +399,7 @@ class PDFDownloader:
                 future_to_url[future] = url
             
             # Process completed tasks with progress bar
-            with tqdm(total=len(urls), desc="Downloading PDFs", unit="file") as pbar:
+            with tqdm(total=len(urls), desc="Downloading files", unit="file") as pbar:
                 for future in as_completed(future_to_url):
                     url = future_to_url[future]
                     try:
@@ -412,6 +480,7 @@ class PDFDownloader:
             'total_size_formatted': format_bytes(total_size),
             'by_year': {},
             'by_subject': {},
+            'by_file_type': {},
         }
         
         for record in self.download_history:
@@ -424,12 +493,17 @@ class PDFDownloader:
             subject = metadata.get('subject')
             if subject:
                 stats['by_subject'][subject] = stats['by_subject'].get(subject, 0) + 1
+            
+            # Group by file type
+            filepath = record.get('filepath', '')
+            ext = Path(filepath).suffix.lower() or '.unknown'
+            stats['by_file_type'][ext] = stats['by_file_type'].get(ext, 0) + 1
         
         return stats
     
     def print_statistics(self) -> None:
         """
-        Print download statistics.
+        Print download statistics grouped by file type, year, and subject.
         """
         stats = self.get_statistics()
         
@@ -439,6 +513,11 @@ class PDFDownloader:
         print(f"\nTotal downloads: {stats['total_downloads']}")
         print(f"Total failures: {stats['total_failures']}")
         print(f"Total size: {stats['total_size_formatted']}")
+        
+        if stats['by_file_type']:
+            print(f"\nDownloads by file type:")
+            for ext, count in sorted(stats['by_file_type'].items()):
+                print(f"  - {ext}: {count} files")
         
         if stats['by_year']:
             print(f"\nDownloads by year:")
@@ -459,6 +538,29 @@ class PDFDownloader:
         self.session.close()
         logger.debug("HTTP session closed")
     
+    def download_pdf(
+        self,
+        url: str,
+        output_path: Optional[Path] = None,
+        metadata: Optional[Dict] = None,
+        skip_existing: bool = True,
+        organize: bool = True,
+    ) -> Optional[Path]:
+        """
+        Alias for download_file() for backward compatibility.
+        
+        Args:
+            url: URL of the file to download
+            output_path: Custom output path (optional)
+            metadata: Metadata dictionary for the file
+            skip_existing: Skip if file already exists
+            organize: Organize files by year/subject
+        
+        Returns:
+            Path to downloaded file, or None if failed/skipped
+        """
+        return self.download_file(url, output_path, metadata, skip_existing, organize)
+    
     def __enter__(self):
         """Context manager entry."""
         return self
@@ -466,4 +568,8 @@ class PDFDownloader:
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit."""
         self.close()
+
+
+# Alias for backward compatibility
+PDFDownloader = FileDownloader
 

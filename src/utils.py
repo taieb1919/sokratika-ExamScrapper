@@ -279,6 +279,45 @@ def create_directory_structure(base_path: Path, year: Optional[str] = None,
     return ensure_directory(path)
 
 
+def get_file_extension(url: str, filename: Optional[str] = None) -> str:
+    """
+    Extract file extension from URL or filename.
+    
+    Args:
+        url: URL string
+        filename: Optional filename (if known)
+    
+    Returns:
+        File extension with leading dot (e.g., '.pdf', '.zip')
+        Returns '.pdf' as default if no extension found
+    
+    Example:
+        >>> get_file_extension("https://example.com/docs/file.pdf")
+        '.pdf'
+        >>> get_file_extension("https://example.com/archive.zip")
+        '.zip'
+    """
+    from urllib.parse import urlparse, unquote
+    from pathlib import Path
+    
+    # Try filename first if provided
+    if filename:
+        ext = Path(filename).suffix
+        if ext:
+            return ext.lower()
+    
+    # Try URL path
+    parsed = urlparse(url)
+    path_filename = unquote(parsed.path.split('/')[-1])
+    if path_filename and '.' in path_filename:
+        ext = Path(path_filename).suffix
+        if ext:
+            return ext.lower()
+    
+    # Default to .pdf
+    return '.pdf'
+
+
 def extract_filename_from_url(url: str) -> str:
     """
     Extract filename from URL.

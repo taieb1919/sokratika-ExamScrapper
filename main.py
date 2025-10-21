@@ -13,8 +13,8 @@ from loguru import logger
 
 from config.settings import BASE_URL, RAW_DATA_DIR, MAX_WORKERS
 from src.scraper import DNBScraper
-from src.downloader import PDFDownloader
-from src.utils import setup_logging
+from src.downloader import FileDownloader
+from src.utils import setup_logging, get_file_extension
 
 
 def main_logic(args: argparse.Namespace) -> None:
@@ -73,9 +73,11 @@ def main_logic(args: argparse.Namespace) -> None:
             for entry in scraper.structured_entries:
                 for f in entry.files:
                     urls.append(f.download_url)
+                    # Detect file extension from URL or filename
+                    file_ext = get_file_extension(f.download_url, f.filename)
                     metadata_list.append({
                         'url': f.download_url,
-                        'filename': f.filename_for_save + '.pdf',
+                        'filename': f.filename_for_save + file_ext,
                         'file_id': f.file_id,
                         'year': entry.session.value.split('_')[0] if '_' in entry.session.value else None,
                         'subject': entry.discipline.value,
@@ -89,7 +91,7 @@ def main_logic(args: argparse.Namespace) -> None:
             output_dir = RAW_DATA_DIR
             max_workers = MAX_WORKERS
 
-            with PDFDownloader(output_dir=output_dir) as downloader:
+            with FileDownloader(output_dir=output_dir) as downloader:
                 logger.info(f"Downloading to: {output_dir}")
                 results = downloader.batch_download(
                     urls=urls,
