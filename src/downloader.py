@@ -41,6 +41,8 @@ from src.utils import (
     format_bytes,
     extract_filename_from_url,
     create_directory_structure,
+    detect_file_type_from_content,
+    get_extension_from_content_type,
 )
 from src.parser import MetadataParser
 
@@ -185,6 +187,15 @@ class FileDownloader:
                         logger.warning(f"DOC file too small: {filepath}")
                     return is_valid
             
+            elif ext == '.bin':
+                # Unknown binary file: only check size
+                is_valid = filepath.stat().st_size > 100
+                if is_valid:
+                    logger.debug(f"Binary file validation passed (size check): {filepath}")
+                else:
+                    logger.warning(f"Binary file too small: {filepath}")
+                return is_valid
+            
             else:
                 # Unknown file type: basic validation (existence + size)
                 logger.debug(f"Unknown file type {ext}, basic validation only: {filepath}")
@@ -291,6 +302,44 @@ class FileDownloader:
             
             logger.debug(f"Downloaded {format_bytes(downloaded_size)}")
             
+            # Detect actual file type and rename if necessary
+            detected_extension = None
+            
+            # 1. Try to get extension from Content-Type header
+            ext_from_content_type = get_extension_from_content_type(content_type)
+            if ext_from_content_type:
+                detected_extension = ext_from_content_type
+                logger.debug(f"Extension from Content-Type: {detected_extension}")
+            
+            # 2. If Content-Type is generic/unknown, detect from magic bytes
+            # Only use magic bytes if Content-Type was None (generic/unknown)
+            if ext_from_content_type is None:
+                try:
+                    with open(output_path, 'rb') as f:
+                        magic_bytes = f.read(8)
+                    detected_extension, detected_mime = detect_file_type_from_content(magic_bytes)
+                    logger.debug(f"Extension from magic bytes: {detected_extension} ({detected_mime})")
+                except Exception as e:
+                    logger.warning(f"Could not read file for magic bytes detection: {e}")
+                    detected_extension = '.bin'
+            
+            # 3. Rename file if extension differs
+            current_extension = output_path.suffix.lower()
+            if detected_extension and detected_extension != current_extension:
+                # Create new path with correct extension
+                new_output_path = output_path.with_suffix(detected_extension)
+                
+                # Handle potential conflicts
+                if new_output_path.exists() and new_output_path != output_path:
+                    logger.warning(f"File already exists with correct extension: {new_output_path}")
+                    output_path.unlink(missing_ok=True)
+                    return new_output_path if self.validate_file(new_output_path) else None
+                
+                # Rename the file
+                output_path.rename(new_output_path)
+                logger.info(f"Renamed file to correct extension: {output_path.name} → {new_output_path.name}")
+                output_path = new_output_path
+            
             # Validate downloaded file
             if not self.validate_file(output_path):
                 logger.error(f"Downloaded file is not valid: {output_path}")
@@ -308,6 +357,11 @@ class FileDownloader:
             self.download_history.append(download_record)
             
             logger.success(f"Successfully downloaded: {output_path.name}")
+            
+            # Extract ZIP files automatically
+            if output_path.suffix.lower() == '.zip':
+                self.extract_zip_file(output_path)
+            
             return output_path
             
         except requests.HTTPError as e:
@@ -564,6 +618,28 @@ class FileDownloader:
     def __enter__(self):
         """Context manager entry."""
         return self
+    
+    def extract_zip_file(self, zip_path: Path) -> Optional[Path]:
+        """
+        Extract ZIP file to folder with same name.
+        
+        Args:
+            zip_path: Path to the ZIP file to extract
+        
+        Returns:
+            Path to the extraction folder, or None if failed
+        """
+        import zipfile
+        
+        extract_folder = zip_path.parent / zip_path.stem
+        try:
+            with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                zip_ref.extractall(extract_folder)
+            logger.success(f"Extracted ZIP to: {extract_folder}")
+            return extract_folder
+        except Exception as e:
+            logger.error(f"Failed to extract ZIP {zip_path}: {e}")
+            return None
     
     def __exit__(self, exc_type, exc_val, exc_tb):
         """Context manager exit."""

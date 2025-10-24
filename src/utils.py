@@ -25,6 +25,91 @@ from config.settings import (
     REQUEST_DELAY,
 )
 
+# Content-Type to file extension mapping
+CONTENT_TYPE_MAP = {
+    'application/pdf': '.pdf',
+    'application/zip': '.zip',
+    'application/x-zip-compressed': '.zip',
+    'application/msword': '.doc',
+    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': '.docx',
+    'application/vnd.oasis.opendocument.text': '.odt',
+    'application/rtf': '.rtf',
+    'text/rtf': '.rtf',
+    'application/vnd.ms-excel': '.xls',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': '.xlsx',
+    'application/octet-stream': None,  # Generic, needs magic bytes detection
+}
+
+# Magic bytes signatures for file type detection
+MAGIC_BYTES_MAP = [
+    (b'%PDF', '.pdf', 'application/pdf'),
+    (b'PK\x03\x04', '.zip', 'application/zip'),  # ZIP/DOCX/ODT/XLSX
+    (b'\xD0\xCF\x11\xE0\xA1\xB1\x1A\xE1', '.doc', 'application/msword'),  # DOC/XLS (OLE)
+    (b'{\\rtf', '.rtf', 'application/rtf'),
+    (b'Rar!', '.rar', 'application/x-rar-compressed'),
+]
+
+
+def detect_file_type_from_content(content: bytes) -> tuple[str, str]:
+    """
+    Detect file type from content using magic bytes.
+    
+    Args:
+        content: First bytes of the file content (at least 8 bytes recommended)
+    
+    Returns:
+        Tuple of (extension, mime_type), e.g. ('.pdf', 'application/pdf')
+        Returns ('.bin', 'application/octet-stream') if unknown
+    
+    Example:
+        >>> with open('file.pdf', 'rb') as f:
+        ...     ext, mime = detect_file_type_from_content(f.read(8))
+        >>> print(ext)
+        '.pdf'
+    """
+    if not content:
+        return '.bin', 'application/octet-stream'
+    
+    # Check magic bytes
+    for magic_bytes, extension, mime_type in MAGIC_BYTES_MAP:
+        if content.startswith(magic_bytes):
+            # Special handling for PK\x03\x04 (ZIP-based formats)
+            if magic_bytes == b'PK\x03\x04':
+                # Try to distinguish between ZIP, DOCX, ODT, XLSX
+                # DOCX/ODT/XLSX are ZIP archives with specific internal structure
+                # For now, return .zip and let further validation handle it
+                return extension, mime_type
+            return extension, mime_type
+    
+    # Unknown format
+    logger.debug(f"Unknown file type, magic bytes: {content[:8].hex()}")
+    return '.bin', 'application/octet-stream'
+
+
+def get_extension_from_content_type(content_type: str) -> Optional[str]:
+    """
+    Get file extension from HTTP Content-Type header.
+    
+    Args:
+        content_type: Content-Type header value (e.g., 'application/pdf; charset=utf-8')
+    
+    Returns:
+        File extension with leading dot, or None if unknown
+    
+    Example:
+        >>> get_extension_from_content_type('application/pdf')
+        '.pdf'
+        >>> get_extension_from_content_type('application/octet-stream')
+        None
+    """
+    if not content_type:
+        return None
+    
+    # Extract main type (remove parameters like charset)
+    main_type = content_type.split(';')[0].strip().lower()
+    
+    return CONTENT_TYPE_MAP.get(main_type)
+
 
 def setup_logging(log_file: Optional[str] = None) -> None:
     """
@@ -57,6 +142,17 @@ def setup_logging(log_file: Optional[str] = None) -> None:
         log_file,
         format=LOG_FORMAT,
         level=LOG_LEVEL,
+        rotation=LOG_ROTATION,
+        retention=LOG_RETENTION,
+        compression="zip",
+    )
+    
+    # Add error-only logger
+    error_log_file = LOGS_DIR / "errors_only.log"
+    logger.add(
+        error_log_file,
+        format=LOG_FORMAT,
+        level="ERROR",  # Only ERROR and CRITICAL
         rotation=LOG_ROTATION,
         retention=LOG_RETENTION,
         compression="zip",
