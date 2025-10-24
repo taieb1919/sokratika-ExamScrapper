@@ -33,7 +33,7 @@ setup(
         "Documentation": "https://github.com/taieb1919/sokratika-ExamScrapper/blob/master/README.md",
         "Source Code": "https://github.com/taieb1919/sokratika-ExamScrapper",
     },
-    packages=find_packages(exclude=["tests", "tests.*"]),
+    packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
         "Intended Audience :: Education",
@@ -52,16 +52,6 @@ setup(
     ],
     python_requires=">=3.8",
     install_requires=requirements,
-    extras_require={
-        "dev": [
-            "pytest>=7.4.0",
-            "pytest-cov>=4.1.0",
-            "pytest-mock>=3.12.0",
-            "black>=23.0.0",
-            "flake8>=6.1.0",
-            "mypy>=1.7.0",
-        ],
-    },
     entry_points={
         "console_scripts": [
             "dnb-scraper=main:main",

@@ -55,6 +55,7 @@ class FileDownloader:
     - Multi-threaded batch downloads
     - Automatic retries with exponential backoff
     - Format-specific validation (PDF, ZIP, DOC, DOCX, ODT, etc.)
+    - Automatic ZIP extraction after download
     - Progress tracking
     - Metadata tracking
     
@@ -66,7 +67,7 @@ class FileDownloader:
     Example:
         >>> downloader = FileDownloader(output_dir="data/raw")
         >>> downloader.download_file("https://example.com/file.pdf")
-        >>> downloader.download_file("https://example.com/docs.zip")
+        >>> downloader.download_file("https://example.com/docs.zip")  # Auto-extracted
         >>> downloader.batch_download(file_links, max_workers=5)
     """
     

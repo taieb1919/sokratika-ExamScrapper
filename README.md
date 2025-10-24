@@ -12,9 +12,11 @@ Un outil Python simple et efficace pour scraper et télécharger les annales du 
 - ✅ **Extraction de liens** `/document/*/download` avec métadonnées
 - ✅ **Téléchargement concurrent** avec gestion de threads
 - ✅ **Organisation automatique** par année et matière
+- ✅ **Extraction automatique des ZIP** - Décompression immédiate après téléchargement
+- ✅ **Support multi-format** - PDF, ZIP, DOC, DOCX, ODT, etc.
 - ✅ **Gestion d'erreurs robuste** avec retry automatique
 - ✅ **Rate limiting** pour respecter le serveur
-- ✅ **Logging complet** avec rotation de fichiers
+- ✅ **Logging complet** avec rotation de fichiers et log d'erreurs séparé
 - ✅ **Interface CLI** intuitive
 - ✅ **Mode headless** ou visible pour le debugging
 
@@ -23,18 +25,11 @@ Un outil Python simple et efficace pour scraper et télécharger les annales du 
 - Python 3.8 ou supérieur
 - pip (gestionnaire de paquets Python)
 - **Google Chrome** (navigateur)
-- **ChromeDriver** (compatible avec votre version de Chrome)
 - Connexion Internet
 
 ### Installation de ChromeDriver
 
-**Méthode 1 - Automatique (recommandé):**
-ChromeDriver sera géré automatiquement par Selenium 4.15+
-
-**Méthode 2 - Manuelle:**
-1. Vérifiez votre version de Chrome : `chrome://version`
-2. Téléchargez ChromeDriver correspondant : https://chromedriver.chromium.org/downloads
-3. Ajoutez ChromeDriver au PATH système ou placez-le dans le dossier du projet
+ChromeDriver est géré automatiquement par Selenium 4.15+. Assurez-vous simplement que Google Chrome est installé.
 
 ## 🚀 Installation
 
@@ -48,12 +43,14 @@ cd sokratika-ExamScrapper
 ### 2. Créer un environnement virtuel (recommandé)
 
 **Windows:**
+
 ```bash
 python -m venv venv
 venv\Scripts\activate
 ```
 
 **Linux/Mac:**
+
 ```bash
 python -m venv venv
 source venv/bin/activate
@@ -64,8 +61,6 @@ source venv/bin/activate
 ```bash
 pip install -r requirements.txt
 ```
-
-**Note**: Selenium sera installé automatiquement. Assurez-vous que Chrome est installé sur votre système.
 
 ## 📖 Utilisation
 
@@ -109,9 +104,6 @@ python main.py --validate --download
 #### Options avancées
 
 ```bash
-# Personnaliser l'URL de scraping
-python main.py --url "https://custom-url.com" --download
-
 # Changer le niveau de logging
 python main.py --log-level DEBUG --download
 
@@ -123,61 +115,17 @@ python main.py --log-file custom.log --download
 
 ```python
 from src.scraper import DNBScraper
-from src.downloader import PDFDownloader
+from src.downloader import FileDownloader
 
-# Initialisation du scraper (headless par défaut)
+# Scraping
 scraper = DNBScraper()
-
-# Ou en mode visible pour debugging
-# scraper = DNBScraper(headless=False)
-
-# Extraction des liens PDF (toutes les pages automatiquement)
-pdf_links = scraper.extract_pdf_links()
-print(f"Trouvé {len(pdf_links)} PDFs sur toutes les pages")
-
-# Obtenir le résumé
-summary = scraper.get_summary_dict()
-print(f"Années disponibles: {summary['years']}")
-print(f"Matières disponibles: {summary['subjects']}")
-
-# Accéder aux entrées structurées (nouvelle approche)
+scraper.extract_pdf_links()
 entries = scraper.structured_entries
-print(f"Entrées structurées: {len(entries)}")
 
-for entry in entries[:3]:  # Premiers 3 exemples
-    print(f"Session: {entry.session.value}")
-    print(f"Discipline: {entry.discipline.value}")
-    print(f"Série: {entry.serie.value}")
-    print(f"Localisation: {entry.localisation.value}")
-    print(f"Fichiers: {len(entry.files)}")
-    for f in entry.files:
-        print(f"  - {f.filename_for_save}.pdf")
-    print()
-
-# Téléchargement avec métadonnées structurées
-urls = []
-metadata_list = []
-for entry in entries:
-    for f in entry.files:
-        urls.append(f.download_url)
-        metadata_list.append({
-            'url': f.download_url,
-            'filename': f.filename_for_save + '.pdf',
-            'file_id': f.file_id,
-            'year': entry.session.value.split('_')[0] if '_' in entry.session.value else None,
-            'subject': entry.discipline.value,
-            'session': entry.session.value,
-            'series': entry.serie.value,
-            'is_correction': False,
-            'document_type': 'sujet',
-        })
-
-downloader = PDFDownloader(output_dir="data/raw")
-results = downloader.batch_download(
-    urls=urls,
-    metadata={'all': metadata_list},
-    max_workers=5
-)
+# Téléchargement
+downloader = FileDownloader()
+urls = [f.download_url for entry in entries for f in entry.files]
+results = downloader.batch_download(urls=urls)
 
 print(f"Téléchargés: {len(results['successful'])}")
 print(f"Échecs: {len(results['failed'])}")
@@ -199,12 +147,20 @@ sokratika-ExamScrapper/
 │   └── settings.py            # Paramètres de configuration
 │
 ├── data/                      # Données téléchargées
-│   ├── raw/                   # PDFs téléchargés (organisés par année/matière)
+│   ├── raw/                   # Fichiers téléchargés (organisés par année/matière)
+│   │   ├── 2024/              # Organisation par année
+│   │   │   ├── Français/      # Organisation par matière
+│   │   │   │   ├── fichier.pdf
+│   │   │   │   ├── archive.zip
+│   │   │   │   └── archive/   # Dossier extrait automatiquement
+│   │   │   └── Mathématiques/
+│   │   └── 2023/
 │   └── metadata/              # Fichiers JSON avec métadonnées
 │
 ├── logs/                      # Fichiers de logs
+│   ├── dnb_scraper_YYYY-MM-DD.log  # Log complet avec rotation
+│   └── errors_only.log             # Log des erreurs uniquement
 │
-├── tests/                     # Tests (vide dans version simplifiée)
 │
 ├── main.py                    # Point d'entrée CLI
 ├── requirements.txt           # Dépendances Python
@@ -212,118 +168,43 @@ sokratika-ExamScrapper/
 └── README.md                  # Ce fichier
 ```
 
-## 📊 Structure HTML du site
-
-Le scraper utilise **Selenium WebDriver** pour gérer la pagination JavaScript et extraire les liens de toutes les pages.
-
-### Pagination :
-- **Boutons de navigation** : Premier, Précédent, [1][2][3]..., Suivant, Dernier
-- **Navigation automatique** : Parcourt toutes les pages jusqu'à la dernière avec le bouton "Suivant"
-- **JavaScript click** : Utilise JavaScript pour éviter les interceptions d'éléments
-
-### Structure du tableau :
-
-```html
-<table>
-  <tbody>
-    <tr>
-      <td>Session</td>
-      <td>Discipline</td>
-      <td>Série</td>
-      <td>Localisation</td>
-      <td class="views-field-link">
-        <a href="/document/[ID]/download" data-atl-name="24genfrdag1_v11.pdf|63414">
-          Télécharger
-        </a>
-      </td>
-    </tr>
-  </tbody>
-</table>
-```
-
-### Éléments clés :
-- **Liens** : Format `/document/[ID]/download` (pas `.pdf`)
-- **Métadonnées** : Attribut `data-atl-name` contenant `"filename.pdf|file_id"`
-- **Colonnes** : Session, Discipline, Série, Localisation, Liens
-- **Pagination** : Gérée dynamiquement avec JavaScript
-
 ## 📊 Métadonnées extraites
 
-Le parser extrait automatiquement les informations depuis `data-atl-name` et les noms de fichiers :
+Le scraper extrait automatiquement :
 
-- **Année** : Année de l'examen (ex: "2024" depuis "24genfrdag1_v11.pdf")
-- **Matière** : Mathématiques, Français, Histoire-Géographie, Sciences, etc.
+- **Année** : Depuis le nom de fichier (ex: "24" → "2024")
+- **Matière** : Français, Mathématiques, Histoire-Géographie, etc.
 - **Session** : normale, remplacement
 - **Série** : générale, professionnelle
 - **Type de document** : sujet ou correction
-- **URL** : Lien de téléchargement
-- **Nom de fichier** : Nom extrait du data-atl-name
-- **ID du fichier** : ID numérique du document
-
-### Exemple de parsing :
-
-```python
-# data-atl-name: "24genfrdag1_v11.pdf|63414"
-{
-    'filename': '24genfrdag1_v11.pdf',
-    'file_id': '63414',
-    'year': '2024',           # "24" → "2024"
-    'subject': 'Français',    # "fr" détecté
-    'series': 'generale',     # "gen" détecté
-    'document_type': 'sujet',
-    'is_correction': False,
-    'url': 'https://eduscol.education.fr/document/123/download'
-}
-```
 
 ## ⚙️ Configuration
 
-### Variables d'environnement
+### Variables d'environnement (optionnel)
 
-Créez un fichier `.env` à la racine du projet :
+Créez un fichier `.env` pour personnaliser :
 
 ```env
-# Selenium settings
-SELENIUM_HEADLESS=True         # Mode headless (True) ou visible (False)
-SELENIUM_TIMEOUT=20            # Timeout pour les éléments (secondes)
-SELENIUM_PAGE_LOAD_WAIT=2.0    # Attente entre les pages (secondes)
-
-# Rate limiting
-REQUEST_DELAY=1.5              # Délai entre les requêtes (secondes)
-DOWNLOAD_TIMEOUT=30            # Timeout de téléchargement (secondes)
-MAX_RETRIES=3                  # Nombre de tentatives en cas d'échec
-
-# Download settings
-MAX_WORKERS=5                  # Nombre de téléchargements concurrents
-VERIFY_SSL=True                # Vérifier les certificats SSL
-
-# Organization
-ORGANIZE_BY_YEAR=True          # Organiser par année
-ORGANIZE_BY_SUBJECT=True       # Organiser par matière
-
-# Logging
-LOG_LEVEL=INFO                 # Niveau de log (DEBUG, INFO, WARNING, ERROR)
+# Principales options
+SELENIUM_HEADLESS=True         # Mode headless
+MAX_WORKERS=5                  # Téléchargements concurrents
+LOG_LEVEL=INFO                 # Niveau de log
 ```
-
-### Personnalisation dans `config/settings.py`
-
-Vous pouvez modifier les paramètres directement dans `config/settings.py` :
-
-- URL de scraping
-- Headers HTTP
-- Mapping des matières
-- Chemins des fichiers
 
 ## 📁 Organisation des fichiers
 
-Les PDFs téléchargés sont automatiquement organisés :
+Les fichiers téléchargés sont automatiquement organisés :
 
 ```
 data/raw/
 ├── 2024/
 │   ├── Français/
 │   │   ├── 24genfrdag1_v11.pdf
-│   │   └── 24genfrdag1_corrige.pdf
+│   │   ├── 24genfrdag1_corrige.pdf
+│   │   ├── archive_documents.zip
+│   │   └── archive_documents/     # Dossier extrait automatiquement
+│   │       ├── document1.pdf
+│   │       └── document2.pdf
 │   ├── Mathématiques/
 │   │   ├── 24genmathag1_v11.pdf
 │   │   └── 24genmathag1_corrige.pdf
@@ -333,80 +214,25 @@ data/raw/
     └── ...
 ```
 
-## 🛡️ Bonnes pratiques implémentées
+**Note** : Les fichiers ZIP sont automatiquement extraits dans un dossier du même nom (sans l'extension `.zip`). Le fichier ZIP original est conservé.
 
-### Respect du serveur
-- Rate limiting (délai configurable entre requêtes)
-- User-Agent approprié
-- Gestion des erreurs HTTP
-- Retry avec backoff exponentiel
+## 🛡️ Bonnes pratiques
 
-### Qualité du code
-- Type hints (PEP 484)
-- Docstrings Google style
-- Conforme PEP 8
-- Gestion d'erreurs complète
+- **Respect du serveur** : Rate limiting, retry automatique
+- **Logging complet** : Logs avec rotation + log d'erreurs séparé (`errors_only.log`)
+- **Code qualité** : Type hints, docstrings, gestion d'erreurs
 
-### Logging
-- Logging structuré avec Loguru
-- Rotation automatique des fichiers de log
-- Niveaux de log configurables
-- Logs colorés dans la console
-
-## 🔧 API Simplifiée
-
-### DNBScraper
+## 🔧 API
 
 ```python
-class DNBScraper:
-    def __init__(self, base_url: str = BASE_URL, headless: bool = True)
-    def extract_pdf_links(self, url: Optional[str] = None, max_pages: Optional[int] = None) -> List[Dict[str, str]]
-    def get_summary_dict(self) -> Dict
-    def close(self) -> None  # Ferme le WebDriver
-    def extract_distinct_table_values(self) -> Dict[str, Set[str]]  # valeurs par page
-    
-    # Propriétés disponibles après extraction:
-    structured_entries: List[ExamEntry]  # Entrées structurées par ligne
-```
+# Scraper
+scraper = DNBScraper()
+scraper.extract_pdf_links()
+entries = scraper.structured_entries
 
-**Fonctionnalités principales :**
-- Mode headless (navigateur invisible) par défaut
-- Pagination automatique (parcourt toutes les pages avec JavaScript click)
-- Fermeture automatique des overlays/modals
-- Waits explicites pour une meilleure stabilité
-- Extraction structurée des données en objets `ExamEntry`
-
-### PDFDownloader
-
-```python
-class PDFDownloader:
-    def __init__(self, output_dir: Path = RAW_DATA_DIR)
-    def batch_download(self, urls: List[str], metadata: Optional[Dict] = None, 
-                      max_workers: int = MAX_WORKERS, skip_existing: bool = True,
-                      organize: bool = True) -> Dict[str, List]
-    def print_statistics(self) -> None
-    def save_metadata(self) -> None
-    def save_failed_downloads(self) -> None
-```
-
-### Modèles de données
-
-```python
-@dataclass
-class ExamEntry:
-    id: int
-    session: SessionEnum
-    discipline: DisciplineEnum
-    serie: SerieEnum
-    localisation: LocalisationEnum
-    files: List[ExamFile]
-
-@dataclass
-class ExamFile:
-    file_id: str
-    filename: str
-    filename_for_save: str
-    download_url: str
+# Téléchargeur
+downloader = FileDownloader()
+downloader.batch_download(urls)
 ```
 
 ## 🐛 Dépannage
@@ -414,32 +240,8 @@ class ExamFile:
 ### ChromeDriver not found
 
 ```bash
-# Vérifier que Chrome est installé
-# Windows: Vérifier dans "Programmes et fonctionnalités"
-# Linux: google-chrome --version
-# Mac: /Applications/Google\ Chrome.app/Contents/MacOS/Google\ Chrome --version
-
 # Selenium 4.15+ gère ChromeDriver automatiquement
-# Si problème persiste, installez webdriver-manager:
-pip install webdriver-manager
-```
-
-### Erreur "WebDriver initialization failed"
-
-```bash
-# Vérifier la version de Chrome et Selenium
-pip install --upgrade selenium
-
-# Ou utiliser le mode visible pour déboguer
-# Dans votre code: scraper = DNBScraper(headless=False)
-```
-
-### Timeout lors de la pagination
-
-```bash
-# Augmenter les timeouts dans .env
-echo "SELENIUM_TIMEOUT=30" >> .env
-echo "SELENIUM_PAGE_LOAD_WAIT=3.0" >> .env
+# Vérifiez que Chrome est installé
 ```
 
 ### Erreur de connexion
@@ -447,13 +249,6 @@ echo "SELENIUM_PAGE_LOAD_WAIT=3.0" >> .env
 ```bash
 # Vérifier la connectivité
 python -c "import requests; print(requests.get('https://eduscol.education.fr').status_code)"
-```
-
-### Problèmes de SSL
-
-```bash
-# Désactiver la vérification SSL (non recommandé)
-echo "VERIFY_SSL=False" >> .env
 ```
 
 ### ImportError
@@ -474,76 +269,34 @@ scraper = DNBScraper()
 scraper.extract_pdf_links()
 stats = scraper.get_summary_dict()
 
-print(f"Total PDFs: {stats['total']}")
-print(f"Années disponibles: {stats['years']}")
-print(f"Matières disponibles: {stats['subjects']}")
-print(f"Sujets: {stats['by_type']['sujet']}")
-print(f"Corrections: {stats['by_type']['correction']}")
+print(f"Total: {stats['total']}")
+print(f"Années: {stats['years']}")
+print(f"Matières: {stats['subjects']}")
 ```
 
-### Télécharger uniquement les PDFs de 2024
+### Télécharger uniquement 2024
 
 ```python
 from src.scraper import DNBScraper
-from src.downloader import PDFDownloader
+from src.downloader import FileDownloader
 
 scraper = DNBScraper()
 scraper.extract_pdf_links()
 
-# Filtrer les entrées de 2024
-entries_2024 = []
-for entry in scraper.structured_entries:
-    if entry.session.value.startswith('2024'):
-        entries_2024.append(entry)
+# Filtrer 2024
+entries_2024 = [e for e in scraper.structured_entries
+                if e.session.value.startswith('2024')]
 
-print(f"Trouvé {len(entries_2024)} entrées pour 2024")
+urls_2024 = [f.download_url for entry in entries_2024 for f in entry.files]
 
-# Préparer les URLs et métadonnées
-urls_2024 = []
-metadata_list_2024 = []
-for entry in entries_2024:
-    for f in entry.files:
-        urls_2024.append(f.download_url)
-        metadata_list_2024.append({
-            'url': f.download_url,
-            'filename': f.filename_for_save + '.pdf',
-            'file_id': f.file_id,
-            'year': '2024',
-            'subject': entry.discipline.value,
-            'session': entry.session.value,
-            'series': entry.serie.value,
-            'is_correction': False,
-            'document_type': 'sujet',
-        })
-
-downloader = PDFDownloader()
-results = downloader.batch_download(
-    urls=urls_2024,
-    metadata={'all': metadata_list_2024}
-)
+downloader = FileDownloader()
+results = downloader.batch_download(urls=urls_2024)
 ```
 
 ## ⚖️ Licence
 
-Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
+MIT License - Voir le fichier `LICENSE` pour plus de détails.
 
 ## ⚠️ Disclaimer
 
-Ce projet est destiné à un usage éducatif et respecte les conditions d'utilisation du site eduscol.education.fr. Les utilisateurs sont responsables de l'utilisation qu'ils font de cet outil et doivent respecter les bonnes pratiques de web scraping éthique.
-
-## 👥 Auteurs
-
-- **Sokratika** - *Développement initial* - [taieb1919](https://github.com/taieb1919)
-
-## 🙏 Remerciements
-
-- Ministère de l'Éducation nationale pour la mise à disposition des annales
-- Communauté Python pour les excellentes bibliothèques
-
-## 📧 Contact
-
-Pour toute question ou suggestion, n'hésitez pas à ouvrir une issue sur GitHub.
-
----
-
-**Note** : Ce projet scrape des documents publics mis à disposition par le ministère de l'Éducation nationale français. Utilisez-le de manière responsable et respectueuse.
+Ce projet est destiné à un usage éducatif et respecte les conditions d'utilisation du site eduscol.education.fr.
