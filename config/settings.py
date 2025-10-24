@@ -50,7 +50,7 @@ SELENIUM_TIMEOUT = int(os.getenv("SELENIUM_TIMEOUT", "20"))  # seconds
 SELENIUM_PAGE_LOAD_WAIT = float(os.getenv("SELENIUM_PAGE_LOAD_WAIT", "2.0"))  # seconds between page loads
 
 # File organization
-ORGANIZE_BY_YEAR = os.getenv("ORGANIZE_BY_YEAR", "True").lower() == "true"
+ORGANIZE_BY_YEAR = os.getenv("ORGANIZE_BY_YEAR", "True").lower() == "false"
 ORGANIZE_BY_SUBJECT = os.getenv("ORGANIZE_BY_SUBJECT", "True").lower() == "true"
 
 # Subjects mapping for French educational system
