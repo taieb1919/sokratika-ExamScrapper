@@ -11,10 +11,34 @@ from pathlib import Path
 from typing import Optional
 from loguru import logger
 
+import re
 from config.settings import BASE_URL, RAW_DATA_DIR, MAX_WORKERS
 from src.scraper import DNBScraper
 from src.downloader import FileDownloader
 from src.utils import setup_logging, get_file_extension
+
+
+def _extract_year_from_filename(filename: str) -> Optional[str]:
+    """
+    Extract year from filename using regex.
+    
+    Args:
+        filename: The filename to extract year from (e.g., "24genfrdag1_v11.pdf")
+    
+    Returns:
+        Year as string (e.g., "2024") or None if not found
+    """
+    if not filename:
+        return None
+    
+    # Look for 2-digit year at the beginning (e.g., "24" for 2024)
+    match = re.match(r'^(\d{2})', filename)
+    if match:
+        year_short = match.group(1)
+        # Convert to full year (assume 20xx for DNB)
+        return f"20{year_short}"
+    
+    return None
 
 
 def main_logic(args: argparse.Namespace) -> None:
@@ -27,25 +51,43 @@ def main_logic(args: argparse.Namespace) -> None:
     logger.info("Scraping and summarizing available PDFs")
 
     with DNBScraper(base_url=args.url) as scraper:
-        pdf_links = scraper.extract_pdf_links(max_pages=args.pages)
-        summary = scraper.get_summary_dict()
+        # Check if we should download during scraping
+        download_during_scraping = getattr(args, 'download_during_scraping', False)
+        
+        if download_during_scraping and getattr(args, 'download', False):
+            # Mode: Download during scraping
+            logger.info("Starting scraping with download during pagination")
+            with FileDownloader(output_dir=RAW_DATA_DIR) as downloader:
+                pdf_links = scraper.run_scraping(
+                    max_pages=args.pages,
+                    download_during_scraping=True,
+                    downloader=downloader
+                )
+                # Print final statistics
+                downloader.print_statistics()
+                downloader.save_metadata()
+        else:
+            # Mode: Traditional scraping first, then download
+            pdf_links = scraper.run_scraping(max_pages=args.pages)
+            summary = scraper.get_summary_dict()
 
-        # Print summary
-        print("\n" + "=" * 60)
-        print("DNB SCRAPER SUMMARY")
-        print("=" * 60)
-        print(f"\nTotal PDFs found: {summary['total']}")
-        if summary['years']:
-            print(f"\nAvailable years ({len(summary['years'])}):")
-            for year in summary['years']:
-                count = summary['by_year'].get(year, 0)
-                print(f"  - {year}: {count} files")
-        if summary['subjects']:
-            print(f"\nAvailable subjects ({len(summary['subjects'])}):")
-            for subject in summary['subjects']:
-                count = summary['by_subject'].get(subject, 0)
-                print(f"  - {subject}: {count} files")
-        print("\n" + "=" * 60 + "\n")
+        # Print summary (only if not downloading during scraping)
+        if not (download_during_scraping and getattr(args, 'download', False)):
+            print("\n" + "=" * 60)
+            print("DNB SCRAPER SUMMARY")
+            print("=" * 60)
+            print(f"\nTotal PDFs found: {summary['total']}")
+            if summary['years']:
+                print(f"\nAvailable years ({len(summary['years'])}):")
+                for year in summary['years']:
+                    count = summary['by_year'].get(year, 0)
+                    print(f"  - {year}: {count} files")
+            if summary['subjects']:
+                print(f"\nAvailable subjects ({len(summary['subjects'])}):")
+                for subject in summary['subjects']:
+                    count = summary['by_subject'].get(subject, 0)
+                    print(f"  - {subject}: {count} files")
+            print("\n" + "=" * 60 + "\n")
 
         # Validation control
         validation_ok = True
@@ -79,7 +121,7 @@ def main_logic(args: argparse.Namespace) -> None:
                         'url': f.download_url,
                         'filename': f.filename_for_save + file_ext,
                         'file_id': f.file_id,
-                        'year': entry.session.value.split('_')[0] if '_' in entry.session.value else None,
+                        'year': f.year or _extract_year_from_filename(f.filename),
                         'subject': entry.discipline.value,
                         'session': entry.session.value,
                         'series': entry.serie.value,
@@ -126,7 +168,7 @@ def run_validation(args: argparse.Namespace, scraper: Optional[DNBScraper] = Non
     # Ensure we have structured entries available
     if scraper is None:
         with DNBScraper(base_url=args.url) as s:
-            s.extract_pdf_links(max_pages=args.pages)
+            s.run_scraping(max_pages=args.pages)
             entries = getattr(s, 'structured_entries', [])
     else:
         # Reuse entries from provided scraper
@@ -232,9 +274,18 @@ Examples:
         default=None,
         help='Limit the number of pages to scrape (default: all)'
     )
+    parser.add_argument(
+        '--download-during-scraping',
+        action='store_true',
+        help='Download files immediately after each page (requires --download)'
+    )
     
     # Parse arguments
     args = parser.parse_args()
+    
+    # Validate arguments
+    if getattr(args, 'download_during_scraping', False) and not getattr(args, 'download', False):
+        parser.error("--download-during-scraping requires --download")
     
     # Setup logging
     import os

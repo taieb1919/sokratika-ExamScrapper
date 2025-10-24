@@ -318,9 +318,10 @@ class DNBScraper:
             logger.error(f"Error clicking next page: {e}")
             return False
     
-    def extract_pdf_links(self, url: Optional[str] = None, max_pages: Optional[int] = None) -> List[Dict[str, str]]:
+    def run_scraping(self, url: Optional[str] = None, max_pages: Optional[int] = None, 
+                    download_during_scraping: bool = False, downloader=None) -> List[Dict[str, str]]:
         """
-        Extract all PDF download links from all pages.
+        Run the complete scraping process on all pages.
         
         This method:
         1. Initializes the WebDriver
@@ -328,18 +329,21 @@ class DNBScraper:
         3. Extracts links from the first page
         4. Navigates through all pages using the "Suivant" button
         5. Extracts links from each page
-        6. Returns all unique links
+        6. Optionally downloads files during scraping (if download_during_scraping=True)
+        7. Returns all unique links
         
         Args:
             url: URL to scrape (default: base_url)
             max_pages: If provided, stops after scraping this many pages
+            download_during_scraping: If True, download files immediately after each page
+            downloader: FileDownloader instance (required if download_during_scraping=True)
         
         Returns:
             List of dictionaries with 'url' and 'data_atl_name' keys
         
         Example:
             >>> scraper = DNBScraper()
-            >>> pdf_links = scraper.extract_pdf_links()
+            >>> pdf_links = scraper.run_scraping()
             >>> print(f"Found {len(pdf_links)} PDFs")
             >>> print(pdf_links[0]['url'])
             '/document/123/download'
@@ -420,6 +424,13 @@ class DNBScraper:
                             serie_txt = tds[2].get_text(strip=True)
                             localisation_txt = tds[3].get_text(strip=True)
 
+                            # Extract year from session text (e.g., "2018 - épreuves normales" -> "2018")
+                            year_from_session = None
+                            if session_txt:
+                                year_match = re.match(r'^(\d{4})', session_txt)
+                                if year_match:
+                                    year_from_session = year_match.group(1)
+
                             _session_code, session_enum = normalize_session(session_txt)
                             discipline_enum = normalize_discipline(discipline_txt)
                             serie_enum = normalize_serie(serie_txt)
@@ -433,9 +444,14 @@ class DNBScraper:
                             for a in link_td.find_all('a', href=True):
                                 if not self._is_pdf_link(a['href']):
                                     continue
-                                data_atl_name = a.get('data-atl-name', '')
-                                meta = self.parser.parse_url(a['href'], data_atl_name)
+                                data_ati_name = a.get('data-ati-name', '')
+                                meta = self.parser.parse_url(a['href'], data_ati_name)
                                 filename = meta.get('filename') or ''
+                                
+                                # Use year from session if not available in metadata
+                                if not meta.get('year') and year_from_session:
+                                    meta['year'] = year_from_session
+                                
                                 m = re.search(r"/document/([^/]+)/download", a['href'])
                                 file_id = m.group(1) if m else (meta.get('file_id') or '')
                                 absolute_url = urljoin(self.base_url, a['href'])
@@ -449,6 +465,7 @@ class DNBScraper:
                                         download_url=absolute_url,
                                         file_id=file_id,
                                         filename_for_save=filename_for_save,
+                                        year=meta.get('year'),
                                     )
                                 )
 
@@ -478,6 +495,59 @@ class DNBScraper:
                         new_links += 1
                 
                 logger.info(f"Page {page_number}: Found {new_links} new PDF links")
+
+                # Download files from current page if requested
+                if download_during_scraping and downloader and new_links > 0:
+                    logger.info(f"Downloading {new_links} files from page {page_number}")
+                    try:
+                        # Prepare URLs and metadata for current page
+                        page_urls = []
+                        page_metadata = []
+                        
+                        # Get the last new_links entries (from current page)
+                        current_page_links = all_pdf_data[-new_links:]
+                        current_page_entries = entries[-new_links:] if len(entries) >= new_links else entries
+                        
+                        for i, link_data in enumerate(current_page_links):
+                            page_urls.append(link_data['url'])
+                            
+                            # Find corresponding entry
+                            entry = current_page_entries[i] if i < len(current_page_entries) else None
+                            if entry and entry.files:
+                                for f in entry.files:
+                                    if f.download_url == link_data['url']:
+                                        # Import here to avoid circular imports
+                                        from src.utils import get_file_extension
+                                        from main import _extract_year_from_filename
+                                        
+                                        file_ext = get_file_extension(f.download_url, f.filename)
+                                        page_metadata.append({
+                                            'url': f.download_url,
+                                            'filename': f.filename_for_save + file_ext,
+                                            'file_id': f.file_id,
+                                            'year': _extract_year_from_filename(f.filename),
+                                            'subject': entry.discipline.value if entry.discipline else None,
+                                            'session': entry.session.value if entry.session else None,
+                                            'series': entry.serie.value if entry.serie else None,
+                                            'is_correction': False,
+                                            'document_type': 'sujet',
+                                        })
+                                        break
+                        
+                        # Download files from current page
+                        if page_urls:
+                            results = downloader.batch_download(
+                                urls=page_urls, 
+                                metadata={'all': page_metadata},
+                                skip_existing=True,
+                                organize=True
+                            )
+                            successful = len(results.get('successful', []))
+                            failed = len(results.get('failed', []))
+                            logger.info(f"Page {page_number}: Downloaded {successful} files, {failed} failed")
+                            
+                    except Exception as e:
+                        logger.error(f"Error downloading files from page {page_number}: {e}")
 
                 # Stop if we reached the requested max_pages
                 if max_pages is not None and page_number >= max_pages:
@@ -531,8 +601,8 @@ class DNBScraper:
             >>> print(f"Total PDFs: {summary['total']}")
             >>> print(f"Years: {summary['years']}")
         """
-        if not self.pdf_links:
-            logger.warning("No PDF links extracted yet. Call extract_pdf_links() first.")
+        if not self.structured_entries:
+            logger.warning("No structured entries extracted yet. Call extract_pdf_links() first.")
             return {
                 'total': 0,
                 'by_year': {},
@@ -543,7 +613,7 @@ class DNBScraper:
             }
         
         stats = {
-            'total': len(self.pdf_links),
+            'total': 0,
             'by_year': {},
             'by_subject': {},
             'by_type': {'sujet': 0, 'correction': 0},
@@ -551,28 +621,25 @@ class DNBScraper:
             'subjects': set(),
         }
         
-        for pdf_data in self.pdf_links:
-            # Parse metadata
-            metadata = self.parser.parse_url(
-                pdf_data['url'], 
-                pdf_data.get('data_atl_name')
-            )
-            
-            # Count by year
-            year = metadata.get('year')
-            if year:
-                stats['by_year'][year] = stats['by_year'].get(year, 0) + 1
-                stats['years'].add(year)
-            
-            # Count by subject
-            subject = metadata.get('subject')
-            if subject:
-                stats['by_subject'][subject] = stats['by_subject'].get(subject, 0) + 1
-                stats['subjects'].add(subject)
-            
-            # Count by type
-            doc_type = metadata.get('document_type', 'sujet')
-            stats['by_type'][doc_type] = stats['by_type'].get(doc_type, 0) + 1
+        for entry in self.structured_entries:
+            for file_obj in entry.files:
+                stats['total'] += 1
+                
+                # Extract year from filename
+                year = self.parser._extract_year("", file_obj.filename or "")
+                if year:
+                    stats['by_year'][year] = stats['by_year'].get(year, 0) + 1
+                    stats['years'].add(year)
+                
+                # Use discipline as subject
+                subject = entry.discipline.value if entry.discipline else None
+                if subject:
+                    stats['by_subject'][subject] = stats['by_subject'].get(subject, 0) + 1
+                    stats['subjects'].add(subject)
+                
+                # Count by type (default to sujet)
+                doc_type = 'sujet'  # Default type
+                stats['by_type'][doc_type] = stats['by_type'].get(doc_type, 0) + 1
         
         # Convert sets to sorted lists
         stats['years'] = sorted(list(stats['years']), reverse=True)

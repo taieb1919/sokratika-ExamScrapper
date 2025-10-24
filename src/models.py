@@ -18,6 +18,7 @@ class File:
     download_url: str
     file_id: str
     filename_for_save: str
+    year: str = None
 
 
 @dataclass

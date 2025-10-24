@@ -9,6 +9,10 @@ import os
 from pathlib import Path
 from typing import Dict
 
+# =============================================================================
+# DIRECTORY CONFIGURATION
+# =============================================================================
+
 # Base directories
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -19,6 +23,10 @@ LOGS_DIR = BASE_DIR / "logs"
 # Ensure directories exist
 for directory in [DATA_DIR, RAW_DATA_DIR, METADATA_DIR, LOGS_DIR]:
     directory.mkdir(parents=True, exist_ok=True)
+
+# =============================================================================
+# TARGET CONFIGURATION
+# =============================================================================
 
 # Target URL
 BASE_URL = "https://eduscol.education.fr/711/preparer-le-diplome-national-du-brevet-dnb-avec-les-sujets-des-annales"
@@ -33,25 +41,47 @@ HEADERS = {
     "Upgrade-Insecure-Requests": "1",
 }
 
-# Rate limiting
+# =============================================================================
+# NETWORK & RATE LIMITING
+# =============================================================================
+
+# Rate limiting and retry settings
 REQUEST_DELAY = float(os.getenv("REQUEST_DELAY", "1.5"))  # seconds between requests
 DOWNLOAD_TIMEOUT = int(os.getenv("DOWNLOAD_TIMEOUT", "30"))  # seconds
 MAX_RETRIES = int(os.getenv("MAX_RETRIES", "3"))
 RETRY_BACKOFF_FACTOR = float(os.getenv("RETRY_BACKOFF_FACTOR", "2.0"))
 
-# Download settings
-MAX_WORKERS = int(os.getenv("MAX_WORKERS", "5"))  # concurrent downloads
-CHUNK_SIZE = 8192  # bytes for streaming downloads
+# SSL verification
 VERIFY_SSL = os.getenv("VERIFY_SSL", "True").lower() == "true"
 
-# Selenium settings
+# =============================================================================
+# DOWNLOAD CONFIGURATION
+# =============================================================================
+
+# Concurrent downloads
+MAX_WORKERS = int(os.getenv("MAX_WORKERS", "5"))  # concurrent downloads
+CHUNK_SIZE = 8192  # bytes for streaming downloads
+
+# =============================================================================
+# SELENIUM CONFIGURATION
+# =============================================================================
+
+# Browser settings
 SELENIUM_HEADLESS = os.getenv("SELENIUM_HEADLESS", "True").lower() == "true"
 SELENIUM_TIMEOUT = int(os.getenv("SELENIUM_TIMEOUT", "20"))  # seconds
 SELENIUM_PAGE_LOAD_WAIT = float(os.getenv("SELENIUM_PAGE_LOAD_WAIT", "2.0"))  # seconds between page loads
 
-# File organization
-ORGANIZE_BY_YEAR = os.getenv("ORGANIZE_BY_YEAR", "True").lower() == "true"
+# =============================================================================
+# FILE ORGANIZATION
+# =============================================================================
+
+# File organization settings
+ORGANIZE_BY_YEAR = os.getenv("ORGANIZE_BY_YEAR", "True").lower() == "true"  # FIXED: was "false"
 ORGANIZE_BY_SUBJECT = os.getenv("ORGANIZE_BY_SUBJECT", "True").lower() == "true"
+
+# =============================================================================
+# EDUCATIONAL SYSTEM MAPPING
+# =============================================================================
 
 # Subjects mapping for French educational system
 SUBJECTS_MAP: Dict[str, str] = {
@@ -75,20 +105,31 @@ SUBJECTS_MAP: Dict[str, str] = {
 # Session types
 SESSION_TYPES = ["normale", "remplacement", "septembre", "juin"]
 
-# Series
+# Series types
 SERIES_TYPES = ["generale", "professionnelle", "pro"]
 
-# Logging configuration
+# =============================================================================
+# LOGGING CONFIGURATION
+# =============================================================================
+
+# Logging settings
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
 LOG_FORMAT = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{name}</cyan>:<cyan>{function}</cyan> - <level>{message}</level>"
 LOG_ROTATION = "10 MB"
 LOG_RETENTION = "30 days"
 
-# Metadata
-METADATA_FILE = METADATA_DIR / "downloads_metadata.json"
-FAILED_DOWNLOADS_FILE = METADATA_DIR / "failed_downloads.json"
+# =============================================================================
+# FILE VALIDATION
+# =============================================================================
 
-# PDF Validation
+# PDF validation settings
 MIN_PDF_SIZE = 1024  # bytes (1 KB minimum)
 PDF_MAGIC_BYTES = b"%PDF"
 
+# =============================================================================
+# METADATA FILES
+# =============================================================================
+
+# Metadata file paths
+METADATA_FILE = METADATA_DIR / "downloads_metadata.json"
+FAILED_DOWNLOADS_FILE = METADATA_DIR / "failed_downloads.json"
